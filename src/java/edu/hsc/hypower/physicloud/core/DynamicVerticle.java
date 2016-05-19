@@ -1,4 +1,4 @@
-package edu.hsc.hypower;
+package edu.hsc.hypower.physicloud.core;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
@@ -13,7 +13,7 @@ import java.io.StringReader;
 /**
  * This verticle reads a clojure string function and executes it within
  * a periodic Vertx function.
- * @author pjmartin
+ * @author pmartin@hsc.edu
  *
  */
 public class DynamicVerticle extends AbstractVerticle {
