@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -46,10 +47,35 @@ public class JSONTest {
 		String ip = config.getString("IP");
 			
 		System.out.println(ip);
+		
 						
+		for(String deviceKey : config.getJsonObject("devices").fieldNames())
+		{
+			
+			JsonObject deviceObject = config.getJsonObject("devices").getJsonObject(deviceKey);
+			System.out.println(deviceObject);
 			
 			
+			for(Entry<String, Object> location : deviceObject)
+			{
+				System.out.println(location.toString());
+				String parseLoc = location.toString();
+				String locNum = parseLoc.substring(4,5);
+				String sensorType = parseLoc.substring(6, parseLoc.length());
+				System.out.println(sensorType + "." + locNum);
+				
+			}
+		}
 			
+			
+		
+		
+		
+		
+		
+		
+		
+		
 			
 		}
 		
