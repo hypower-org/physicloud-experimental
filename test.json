@@ -1,0 +1,30 @@
+{
+
+    "IP" : "127.0.0.1",
+    "Location" : "East wall",	
+    "securityCode" : "h27ce566382jdiii238d",
+    "heartBeatPeriod" : 500,
+
+
+    "device.PhidgetIKit":		{
+				    
+
+			"ain.7" : "temp",
+			"ain.6" : "humidity",
+			"ain.5" : "light",
+			"ain.4" : "pressure"
+
+		    
+
+		},
+
+
+   "device.PhidgetGPS" :
+		{
+
+
+
+		}
+
+        
+}
