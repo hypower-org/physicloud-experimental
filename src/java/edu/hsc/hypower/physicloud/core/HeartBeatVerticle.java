@@ -44,6 +44,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 			public void handle(Long event) {
 				// TODO: send the hearbeat message
 				vertx.eventBus().publish(KernelChannels.HEARTBEAT, ipAddr);
+				System.out.println("Heartbeat sent...");
 			}
 		});
 		
@@ -54,6 +55,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				
 				// TODO: Need a more sophisticated neighbor data book keeping mechanism!
 				String ip = event.body();
+				System.out.println("...heartbeat received from " + ip);
 				if(ip != ipAddr){
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData()
 																.getLocalMap(KernelMapNames.NEIGHBORS);
