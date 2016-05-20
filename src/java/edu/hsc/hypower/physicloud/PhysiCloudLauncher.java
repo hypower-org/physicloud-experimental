@@ -39,14 +39,13 @@ public class PhysiCloudLauncher {
 
 		//		DeploymentOptions options = new DeploymentOptions();
 
-		// TODO: Read configuration file - extract IP addr, etc.
-
 		// Read in properties file, which is JSON
 
 		try	{
 
 			ObjectMapper mapper = new ObjectMapper();
-			JsonNode rootNode = mapper.readTree(new File("test.json"));
+			String configFileName = args[0];
+			JsonNode rootNode = mapper.readTree(new File(configFileName));
 
 			String nodeIp = rootNode.get("IP").asText();											// retrieve IP	
 			System.out.println("Sensor node IP Address: " + nodeIp);
@@ -63,42 +62,32 @@ public class PhysiCloudLauncher {
 			HashMap<String, ArrayList<String>> deviceMap = new HashMap<String, ArrayList<String>>(); 
 
 			Iterator<String> it = rootNode.fieldNames();
-
 			while(it.hasNext())
 			{
-
 				String fieldName = it.next();		
-
-
 				if(fieldName.indexOf('.') != -1)
 				{
 					String devName = fieldName.substring(fieldName.indexOf('.')+1);				
 					JsonNode tempNode = rootNode.get(fieldName);
 
-					Iterator<String> internal = tempNode.fieldNames();
+					Iterator<String> internalIt = tempNode.fieldNames();
 					ArrayList<String> forMap = new ArrayList<String>();
-
 					System.out.println(devName);
 
-					while(internal.hasNext())
+					while(internalIt.hasNext())
 					{
-
-						String nextField = internal.next();
+						String nextField = internalIt.next();
 						String sensorType = tempNode.get(nextField).asText();
 						String locNum = nextField.substring(4,5);
 						String last = sensorType + '.' + locNum;
 						forMap.add(last);
 						System.out.println(last);								
-
 					}
 
 					deviceMap.put(devName, forMap);
 
 				}
 			}
-
-
-			// TODO: cluster using the ip address
 
 			VertxOptions opts = new VertxOptions()
 					.setWorkerPoolSize(Runtime.getRuntime().availableProcessors())
@@ -111,25 +100,12 @@ public class PhysiCloudLauncher {
 						System.out.println("Clustered vertx launched.");
 						Vertx vertx = asyncRes.result();
 
+						// TODO: when successfully clustered, launch heartbeat verticle, resource verticle, task manager verticle...
+
 					}
 				}
 			};
 			Vertx.clusteredVertx(opts, resultHandler);
-
-
-
-
-
-			// TODO: when successfully clustered, launch heartbeat verticle, resource verticle, task manager verticle...
-
-
-
-
-
-
-
-
-
 
 		} catch (JsonProcessingException e) {
 			System.err.println("JSON ERROR: " + e.getMessage());

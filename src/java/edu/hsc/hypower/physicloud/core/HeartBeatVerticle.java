@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.hsc.hypower.physicloud.*;
+import edu.hsc.hypower.physicloud.util.NeighborData;
 
 /**
  * 
@@ -24,11 +25,14 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	private final String ipAddr;
 	private final Long hbPeriod;
 	
+	// Local structure to keep track of timing. If we have not heard from a neighber in a long
+	// time (now 5 seconds) we need to do something...
 	private HashMap<String,Long> neighborUpdateTimes;
 	
 	public HeartBeatVerticle(String ip, Long hbp){
 		ipAddr = ip;
 		hbPeriod = hbp;
+		neighborUpdateTimes = new HashMap<String,Long>();
 	}
 	
 	@Override
@@ -47,7 +51,16 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 			@Override
 			public void handle(Message<String> event) {
-				// TODO: receive the heartbeat message
+				
+				// TODO: Need a more sophisticated neighbor data book keeping mechanism!
+				String ip = event.body();
+				if(ip != ipAddr){
+					LocalMap<String,NeighborData> neighborMap = vertx.sharedData()
+																.getLocalMap(KernelMapNames.NEIGHBORS);
+					neighborMap.put(ip, new NeighborData(ip));
+					// Update the last update time from this neighbor.
+					neighborUpdateTimes.put(ip, System.currentTimeMillis());
+				}
 			}
 			
 		});

@@ -8,6 +8,14 @@ package edu.hsc.hypower.physicloud.util;
  */
 public final class NeighborData {
 
-	
-	
+	private final String ipAddr;
+
+	public NeighborData(String ipAddr) {
+		this.ipAddr = ipAddr;
+	}
+
+	public final String getIpAddr() {
+		return ipAddr;
+	}
+
 }
