@@ -43,6 +43,9 @@ public class OshiTest
 		
 		//Task Load
 		int pcount = htes.getProcessor().getProcessCount();
+		double pload = htes.getProcessor().getSystemCpuLoad();
+		//double [] ptick = htes.getProcessor().getProcessorCpuLoadBetweenTicks();
+		
 		
 	
 		
@@ -55,15 +58,16 @@ public class OshiTest
 		hbtest.put("Physical Number of Cores", pcore);
 		hbtest.put("Logical Number of Cores", lcore);
 		hbtest.put("Processes Running", pcount);
+		hbtest.put("Processor Load", pload);
+		//hbtest.put("CPU Load Between Ticks", ptick);
+		
+	
+		
 		
 		Buffer tbuff = Buffer.buffer();
-		
-		System.out.println(tbuff.toString());
+		//Buffer all = Buffer.buffer();	
 		
 		hbtest.writeToBuffer(tbuff);
-		
-		
-		
 	
 		
 		vertx.fileSystem().writeFile("hbinfo.json", tbuff, new AsyncResultHandler<Void>() 
@@ -78,7 +82,7 @@ public class OshiTest
 			}
 		}
 				);
-		
+	
 		
 		
 		
