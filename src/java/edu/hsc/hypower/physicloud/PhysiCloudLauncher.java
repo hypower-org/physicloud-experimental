@@ -43,6 +43,7 @@ public class PhysiCloudLauncher {
 
 		try	{
 
+
 			ObjectMapper mapper = new ObjectMapper();
 			//String configFileName = args[0];
 			JsonNode rootNode = mapper.readTree(new File("test.json"));
