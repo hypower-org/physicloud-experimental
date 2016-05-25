@@ -2,7 +2,9 @@ package edu.hsc.hypower;
 
 
 import java.io.*;
+import java.io.FileWriter;
 import java.util.Map.Entry;
+import java.io.IOException;
 
 import oshi.SystemInfo;
 import oshi.hardware.*;
@@ -13,10 +15,11 @@ import oshi.json.*;
 
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.FileProps;
+
+import org.json.simple.JSONObject;
 
 
 
@@ -26,63 +29,59 @@ public class OshiTest
 	{
 		Vertx vertx = Vertx.vertx();
 
-		// TODO: Java variable names should be descriptive and in "camelCase". Try sysInfo, systemInfo, info, etc...
-		// Use the Eclipse Refactor tool to change variable names automatically.
-		SystemInfo test = new SystemInfo();
-		// TODO: Again, better java variables make code more readable. How about hardwareLayer?
-		HardwareAbstractionLayer htes = test.getHardware();
+	
+		SystemInfo sysInfo = new SystemInfo();
+	
+		HardwareAbstractionLayer hardwareLayer = sysInfo.getHardware();
 
-		// TODO: change all variables to align with Java camelCase standard...
 		//Processor Speed
-		long pspeed = htes.getProcessor().getVendorFreq();
+		long pSpeed = hardwareLayer.getProcessor().getVendorFreq();
 
 		//Memory Usage
-		long mem = htes.getMemory().getAvailable();
+		long memAvail = hardwareLayer.getMemory().getAvailable();
 
-		//Number of Cores	import io.vertx.core.file.AsyncFile;
-		int pcore = htes.getProcessor().getPhysicalProcessorCount();
-		int lcore = htes.getProcessor().getLogicalProcessorCount();
+		//Number of Cores	 
+		int pCore = hardwareLayer.getProcessor().getPhysicalProcessorCount();
+		int lCore = hardwareLayer.getProcessor().getLogicalProcessorCount();
 
-		// TODO: I want the physicloud systems to report their available memory too.
-		
+				
 		//External Sensors
 
 		//Task Load
-		// TODO: Process count will give us too much info. CPU load is more useful measure for us.
-		int pcount = htes.getProcessor().getProcessCount();
-		double pload = htes.getProcessor().getSystemCpuLoad();
-		//double [] ptick = htes.getProcessor().getProcessorCpuLoadBetweenTicks();
+		double pLoad = hardwareLayer.getProcessor().getSystemCpuLoad();
 
 
 		//Place all necessary information into a JSON file
 
-		JsonObject hbtest = new JsonObject();
+		JSONObject hbtest = new JSONObject();
 
-		hbtest.put("Processor Speed", pspeed);
-		hbtest.put("Available Memory", mem);
-		hbtest.put("Physical Number of Cores", pcore);
-		hbtest.put("Logical Number of Cores", lcore);
-		hbtest.put("Processes Running", pcount);
-		hbtest.put("Processor Load", pload);
-		//hbtest.put("CPU Load Between Ticks", ptick);
+		hbtest.put("Processor Speed", pSpeed);
+		hbtest.put("Available Memory", memAvail);
+		hbtest.put("Physical Number of Cores", pCore);
+		hbtest.put("Logical Number of Cores", lCore);
+		hbtest.put("Processor Load", pLoad);
 
-		Buffer tbuff = Buffer.buffer();
-		//Buffer all = Buffer.buffer();	
+		//Buffer tBuff = Buffer.buffer();
+		
 
-		hbtest.writeToBuffer(tbuff);
-
-		// TODO: Writing a generic file does not necessarily produce a readable JSON. You would have to write
-		// the file using a Json output codec of some sort.
-		vertx.fileSystem().writeFile("hbinfo.json", tbuff, new AsyncResultHandler<Void>() 
+		//hbtest.writeToBuffer(tBuff);
+		
+		try
 		{
+			File file = new File("hbInfo.json");
+			file.createNewFile();
+			FileWriter filewriter = new FileWriter(file);
+			System.out.println("Creating JSON file");
+			
+			filewriter.write(hbtest.toJSONString());
+			filewriter.flush();
+			filewriter.close();
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+			
+		}
+		
 
-			public void handle(AsyncResult asyncResult) 
-			{
-				if (asyncResult.succeeded())
-					System.out.println("JSON Successfully Created");
-				else if (asyncResult.failed())
-					System.out.println("JSON Creation Unsuccessful");
-			}
-		});
-	}
-}
+
