@@ -58,9 +58,9 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<String>>(){
 
 			@Override
-			public void handle(Message<String> event) {
+			public void handle(Message<String> event) {											// Lines 64-74 will be changed upon completion of the Vert.x message codec. 
 
-				// TODO: Need a more sophisticated neighbor data book keeping mechanism!
+				// TODO: Need a more sophisticated neighbor data book keeping mechanism!		// I was messing around with the idea of sending a JSON OBject and then parsing, but I believe it requires the codec
 				String jsonInfo = event.body();
 				JSONParser parser = new JSONParser();
 				JSONObject tempObj;
