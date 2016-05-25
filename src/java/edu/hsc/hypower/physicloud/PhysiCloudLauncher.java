@@ -32,15 +32,7 @@ public class PhysiCloudLauncher {
 
 	public static void main(String[] args) {
 
-		//		SystemInfo si = new SystemInfo();
-		//		System.out.println("proc speed (MHz) = " + (si.getHardware().getProcessor().getVendorFreq() / 1E6 ));
-		//		System.out.println("# processors = " + si.getHardware().getProcessor().getPhysicalProcessorCount());
-		//		System.out.println("# cores = " + si.getHardware().getProcessor().getLogicalProcessorCount());
-
-		//		DeploymentOptions options = new DeploymentOptions();
-
 		// Read in properties file, which is JSON
-
 		try	{
 
 
@@ -85,6 +77,7 @@ public class PhysiCloudLauncher {
 						System.out.println(last);								
 					}
 
+					// TODO: The results of this map should be submitted to the HeartBeatVerticle
 					deviceMap.put(devName, forMap);
 
 				}
