@@ -39,14 +39,11 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 		
-		vertx.setPeriodic(hbPeriod, new Handler<Long>(){
-			@Override
-			public void handle(Long event) {
-				// TODO: send the hearbeat message
-				vertx.eventBus().publish(KernelChannels.HEARTBEAT, ipAddr);
-				System.out.println("Heartbeat sent...");
-			}
-		});
+		// TODO: Note my use of the "function reference" notation from Java 8. As our verticles
+		// get more complicated, we should implement the functions in the verticle class and pass
+		// the function reference to the Vertx call.
+		// For more details, see the Java 8 book and look up function reference.
+		vertx.setPeriodic(hbPeriod, this::handleHeartbeat);
 		
 		vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<String>>(){
 
@@ -71,6 +68,13 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		
 	}
 
+	// See use as a function reference above.
+	private final void handleHeartbeat(Long timerEvent){
+		// TODO: send the hearbeat message
+		vertx.eventBus().publish(KernelChannels.HEARTBEAT, ipAddr);
+		System.out.println("Heartbeat sent...");
+	}
+	
 	@Override
 	public void stop() throws Exception {
 		
