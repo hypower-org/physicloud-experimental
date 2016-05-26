@@ -65,7 +65,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				double tempLoad = jsonInfo.getDouble(JsonFieldNames.LOAD);
 
 
-				System.out.println("...heartbeat received from " + tempIp + " with speed " + tempProcesses + "Hz and available memory: " + tempMem);
+				System.out.println("...heartbeat received from " + tempIp + " with " + tempProcesses + " processes and available memory: " + tempMem);
 				if(tempIp != ipAddr){
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData()
 							.getLocalMap(KernelMapNames.NEIGHBORS);
