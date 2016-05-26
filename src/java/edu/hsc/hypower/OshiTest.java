@@ -16,12 +16,9 @@ import oshi.json.*;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.FileProps;
-
-import org.json.simple.JSONObject;
-
-
 
 public class OshiTest 
 {
@@ -52,14 +49,15 @@ public class OshiTest
 
 
 		//Place all necessary information into a JSON file
+		
+		// TODO: See my use of JsonObject here! I removed the Jackon JSONObject class.
+		JsonObject hbJson = new JsonObject();
 
-		JSONObject hbtest = new JSONObject();
-
-		hbtest.put("Processor Speed", pSpeed);
-		hbtest.put("Available Memory", memAvail);
-		hbtest.put("Physical Number of Cores", pCore);
-		hbtest.put("Logical Number of Cores", lCore);
-		hbtest.put("Processor Load", pLoad);
+		hbJson.put("Processor Speed", pSpeed);
+		hbJson.put("Available Memory", memAvail);
+		hbJson.put("Physical Number of Cores", pCore);
+		hbJson.put("Logical Number of Cores", lCore);
+		hbJson.put("Processor Load", pLoad);
 
 		//Buffer tBuff = Buffer.buffer();
 		
@@ -73,7 +71,7 @@ public class OshiTest
 			FileWriter filewriter = new FileWriter(file);
 			System.out.println("Creating JSON file");
 			
-			filewriter.write(hbtest.toJSONString());
+			filewriter.write(hbJson.toString());
 			filewriter.flush();
 			filewriter.close();
 		}
