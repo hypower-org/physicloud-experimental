@@ -4,20 +4,20 @@ package edu.hsc.hypower.physicloud.util;
  * An immutable class that stores all necessary PhysiCloud neighbor data.
  * 
  * @author pmartin@hsc.edu
- *
+ *		   hackleyb18@hsc.edu
  */
 public final class NeighborData {
 
 	private final String ipAddr;
-	private final long pSpeed;
+	private final int numProcesses;
 	private final long memAvail;
 	private final int pCore;
 	private final int lCore;
 	private final double pLoad;
 
-	public NeighborData(String ipAddr, long pSpeed, long memAvail, int pCore, int lCore, double pLoad) {
+	public NeighborData(String ipAddr, int process, long memAvail, int pCore, int lCore, double pLoad) {
 		this.ipAddr = ipAddr;
-		this.pSpeed = pSpeed;
+		this.numProcesses = process;
 		this.memAvail = memAvail;
 		this.pCore = pCore;
 		this.lCore = lCore;
@@ -28,8 +28,8 @@ public final class NeighborData {
 		return ipAddr;
 	}
 
-	public long getpSpeed() {
-		return pSpeed;
+	public int getNumProcesses() {
+		return numProcesses;
 	}
 	
 	public long memAvail()	{

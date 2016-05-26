@@ -23,7 +23,7 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
 /**
  * 
  * @author pmartin@hsc.edu
- *
+ *		   hackleyb18@hsc.edu	
  */
 public class HeartBeatVerticle extends AbstractVerticle {
 
@@ -58,20 +58,20 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				// TODO: Need a more sophisticated neighbor data book keeping mechanism!		
 				JsonObject jsonInfo = msg.body();
 				String tempIp = jsonInfo.getString(JsonFieldNames.IP_ADDR);
-				long tempSpeed = jsonInfo.getLong(JsonFieldNames.SPEED);
+				int tempProcesses = jsonInfo.getInteger(JsonFieldNames.PROCESSES);					// I changed this field to current # of processes rather than vendor defined frequency
 				long tempMem = jsonInfo.getLong(JsonFieldNames.MEMORY);
 				int tempPCore = jsonInfo.getInteger(JsonFieldNames.P_CORES);
 				int tempLCore = jsonInfo.getInteger(JsonFieldNames.L_CORES);
 				double tempLoad = jsonInfo.getDouble(JsonFieldNames.LOAD);
 
 
-				System.out.println("...heartbeat received from " + tempIp + " with speed " + tempSpeed + "Hz and available memory: " + tempMem);
+				System.out.println("...heartbeat received from " + tempIp + " with speed " + tempProcesses + "Hz and available memory: " + tempMem);
 				if(tempIp != ipAddr){
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData()
 							.getLocalMap(KernelMapNames.NEIGHBORS);
 
 					// TODO: Reinstate once the JsonObject is pulled apart correctly.
-					neighborMap.put(tempIp, new NeighborData(tempIp, tempSpeed, tempMem, tempPCore, tempLCore, tempLoad));
+					neighborMap.put(tempIp, new NeighborData(tempIp, tempProcesses, tempMem, tempPCore, tempLCore, tempLoad));
 
 					// Update the last update time from this neighbor.
 					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());
@@ -95,21 +95,19 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	}
 
 
-	// TODO: Creating and transmitting the *entire file* is too much. We can just send the JsonObject itself and unpack it.
-	// BUT, we will need some constant string variables (much like the KernelChannels and KernelMapNames classes I made).
 	private final JsonObject createJson()	{
 
 		SystemInfo sysInfo = new SystemInfo();
 		HardwareAbstractionLayer hardwareLayer = sysInfo.getHardware();													
-		long pSpeed = hardwareLayer.getProcessor().getVendorFreq();				//Processor Speed		
+		int process = hardwareLayer.getProcessor().getProcessCount();			//Number of current processes		
 		long memAvail = hardwareLayer.getMemory().getAvailable();				//Memory Usage			 
 		int pCore = hardwareLayer.getProcessor().getPhysicalProcessorCount();	//Number of Cores
-		int lCore = hardwareLayer.getProcessor().getLogicalProcessorCount();	//LOgical Cores
+		int lCore = hardwareLayer.getProcessor().getLogicalProcessorCount();	//Logical Cores
 		double pLoad = hardwareLayer.getProcessor().getSystemCpuLoad();			//Task Load
 
 		JsonObject hbInfo = new JsonObject();									//Format the JSON with the correct data
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
-		hbInfo.put(JsonFieldNames.SPEED, pSpeed);
+		hbInfo.put(JsonFieldNames.PROCESSES, process);
 		hbInfo.put(JsonFieldNames.MEMORY, memAvail);
 		hbInfo.put(JsonFieldNames.P_CORES, pCore);
 		hbInfo.put(JsonFieldNames.L_CORES, lCore);
