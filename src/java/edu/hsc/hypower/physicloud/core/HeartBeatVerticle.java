@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.hsc.hypower.physicloud.*;
+import edu.hsc.hypower.physicloud.util.JsonFieldNames;
 import edu.hsc.hypower.physicloud.util.NeighborData;
 
 /**
@@ -30,6 +31,8 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 	private final String ipAddr;
 	private final Long hbPeriod;
+
+
 
 	// Local structure to keep track of timing. If we have not heard from a neighber in a long
 	// time (now 5 seconds) we need to do something...
@@ -51,41 +54,24 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 			@Override
 			public void handle(Message<JsonObject> msg) {											
-				// Lines 64-74 will be changed upon completion of the Vert.x message codec.
-				
-				// TODO: Ok that is fine. I commented out the code since its dependencies 
 
 				// TODO: Need a more sophisticated neighbor data book keeping mechanism!		
-				// I was messing around with the idea of sending a JSON OBject and then parsing, but I believe it requires the codec
-				// TODO: Yes - because you are trying to send a JSON file! If you just send a Vertx Json object, it will work fine.
 				JsonObject jsonInfo = msg.body();
-//				JSONParser parser = new JSONParser();
-//				JSONObject tempObj;
-//				try {
-//					tempObj = (JSONObject) parser.parse(jsonInfo);
+				String tempIp = jsonInfo.getString(JsonFieldNames.IP_ADDR);
+				long tempSpeed = jsonInfo.getLong(JsonFieldNames.SPEED);
+				long tempMem = jsonInfo.getLong(JsonFieldNames.MEMORY);
+				int tempPCore = jsonInfo.getInteger(JsonFieldNames.P_CORES);
+				int tempLCore = jsonInfo.getInteger(JsonFieldNames.L_CORES);
+				double tempLoad = jsonInfo.getDouble(JsonFieldNames.LOAD);
 
-				// TODO: Look at how I use the JsonObject and unpack it...
-				String tempIp = jsonInfo.getString("ipAddr");
-				long tempSpeed = jsonInfo.getLong("proSpeed");
 
-				//					String tempIp = tempObj.get("ipAddr").toString();
-				
-				// TODO: These are bugs below!!! You will get null pointer exceptions since the keys you use on
-				// the Json object do not match the keys in your createJson function below.
-				
-				//					long tempSpeed = (long) tempObj.get("Processor Speed");
-				//					long tempMem = (long) tempObj.get("Available Memory");
-				//					int tempPCore = (int) tempObj.get("Physical Number of Cores");						
-				//					int tempLCore = (int) tempObj.get("Logical Number of Cores");
-				//					double tempLoad = (double) tempObj.get("Processor Load");
-
-				System.out.println("...heartbeat received from " + tempIp + " with speed " + tempSpeed + "Hz");
+				System.out.println("...heartbeat received from " + tempIp + " with speed " + tempSpeed + "Hz and available memory: " + tempMem);
 				if(tempIp != ipAddr){
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData()
 							.getLocalMap(KernelMapNames.NEIGHBORS);
 
 					// TODO: Reinstate once the JsonObject is pulled apart correctly.
-					//						neighborMap.put(tempIp, new NeighborData(tempIp, tempSpeed, tempMem, tempPCore, tempLCore, tempLoad));
+					neighborMap.put(tempIp, new NeighborData(tempIp, tempSpeed, tempMem, tempPCore, tempLCore, tempLoad));
 
 					// Update the last update time from this neighbor.
 					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());
@@ -122,27 +108,12 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		double pLoad = hardwareLayer.getProcessor().getSystemCpuLoad();			//Task Load
 
 		JsonObject hbInfo = new JsonObject();									//Format the JSON with the correct data
-		hbInfo.put("ipAddr",  ipAddr);
-		hbInfo.put("proSpeed", pSpeed);
-		hbInfo.put("availMemory", memAvail);
-		hbInfo.put("pCores", pCore);
-		hbInfo.put("lCores", lCore);
-		hbInfo.put("pLoad", pLoad);
-
-//		try
-//		{
-//			File file = new File("hbInfo.json");
-//			file.createNewFile();
-//			FileWriter filewriter = new FileWriter(file);
-//			System.out.println("Creating JSON file");
-//
-//			filewriter.write(hbInfo.toString());
-//			filewriter.flush();
-//			filewriter.close();
-//		}
-//		catch(IOException e) {
-//			e.printStackTrace();
-//		}
+		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
+		hbInfo.put(JsonFieldNames.SPEED, pSpeed);
+		hbInfo.put(JsonFieldNames.MEMORY, memAvail);
+		hbInfo.put(JsonFieldNames.P_CORES, pCore);
+		hbInfo.put(JsonFieldNames.L_CORES, lCore);
+		hbInfo.put(JsonFieldNames.LOAD, pLoad);
 
 		return hbInfo;
 
