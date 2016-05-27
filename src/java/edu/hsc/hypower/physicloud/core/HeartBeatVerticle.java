@@ -32,8 +32,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	private final String ipAddr;
 	private final Long hbPeriod;
 
-
-
 	// Local structure to keep track of timing. If we have not heard from a neighber in a long
 	// time (now 5 seconds) we need to do something...
 	private HashMap<String,Long> neighborUpdateTimes;
@@ -48,6 +46,8 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 
+		// TODO: Add another periodic event to handleNeighborTimeouts... 
+		
 		vertx.setPeriodic(hbPeriod, this::handleHeartbeat);
 
 		vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
@@ -58,20 +58,20 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				// TODO: Need a more sophisticated neighbor data book keeping mechanism!		
 				JsonObject jsonInfo = msg.body();
 				String tempIp = jsonInfo.getString(JsonFieldNames.IP_ADDR);
-				int tempProcesses = jsonInfo.getInteger(JsonFieldNames.PROCESSES);					// I changed this field to current # of processes rather than vendor defined frequency
+//				int tempProcesses = jsonInfo.getInteger(JsonFieldNames.PROCESSES);					// I changed this field to current # of processes rather than vendor defined frequency
 				long tempMem = jsonInfo.getLong(JsonFieldNames.MEMORY);
 				int tempPCore = jsonInfo.getInteger(JsonFieldNames.P_CORES);
 				int tempLCore = jsonInfo.getInteger(JsonFieldNames.L_CORES);
 				double tempLoad = jsonInfo.getDouble(JsonFieldNames.LOAD);
 
 
-				System.out.println("...heartbeat received from " + tempIp + " with " + tempProcesses + " processes and available memory: " + tempMem);
+				System.out.println("...heartbeat received from " + tempIp + " with available memory: " + tempMem);
 				if(tempIp != ipAddr){
-					LocalMap<String,NeighborData> neighborMap = vertx.sharedData()
-							.getLocalMap(KernelMapNames.NEIGHBORS);
+					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
-					// TODO: Reinstate once the JsonObject is pulled apart correctly.
-					neighborMap.put(tempIp, new NeighborData(tempIp, tempProcesses, tempMem, tempPCore, tempLCore, tempLoad));
+					// TODO: I removed the process count. The current cpu load is enough.
+//					neighborMap.put(tempIp, new NeighborData(tempIp, tempProcesses, tempMem, tempPCore, tempLCore, tempLoad));
+					neighborMap.put(tempIp, new NeighborData(tempIp, tempMem, tempPCore, tempLCore, tempLoad));
 
 					// Update the last update time from this neighbor.
 					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());
@@ -81,25 +81,14 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 	}
 
-	// See use as a function reference above.
+	/**
+	 * Creates the heartbeat message for this cyber-physical unit and publishes it to all other CPUs.
+	 * @param timerEvent
+	 */
 	private final void handleHeartbeat(Long timerEvent){
-		// TODO: send the heart beat message
-		JsonObject sendInfo = createJson();
-		vertx.eventBus().publish(KernelChannels.HEARTBEAT, sendInfo);
-		System.out.println("Heartbeat sent...");
-	}
-
-	@Override
-	public void stop() throws Exception {
-		super.stop();
-	}
-
-
-	private final JsonObject createJson()	{
-
 		SystemInfo sysInfo = new SystemInfo();
 		HardwareAbstractionLayer hardwareLayer = sysInfo.getHardware();													
-		int process = hardwareLayer.getProcessor().getProcessCount();			//Number of current processes		
+//		int process = hardwareLayer.getProcessor().getProcessCount();			//Number of current processes		
 		long memAvail = hardwareLayer.getMemory().getAvailable();				//Memory Usage			 
 		int pCore = hardwareLayer.getProcessor().getPhysicalProcessorCount();	//Number of Cores
 		int lCore = hardwareLayer.getProcessor().getLogicalProcessorCount();	//Logical Cores
@@ -107,14 +96,19 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 		JsonObject hbInfo = new JsonObject();									//Format the JSON with the correct data
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
-		hbInfo.put(JsonFieldNames.PROCESSES, process);
+//		hbInfo.put(JsonFieldNames.PROCESSES, process);
 		hbInfo.put(JsonFieldNames.MEMORY, memAvail);
 		hbInfo.put(JsonFieldNames.P_CORES, pCore);
 		hbInfo.put(JsonFieldNames.L_CORES, lCore);
 		hbInfo.put(JsonFieldNames.LOAD, pLoad);
+		
+		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
+		System.out.println("Heartbeat sent...");
+	}
 
-		return hbInfo;
-
+	@Override
+	public void stop() throws Exception {
+		super.stop();
 	}
 }
 

@@ -35,7 +35,6 @@ public class PhysiCloudLauncher {
 		// Read in properties file, which is JSON
 		try	{
 
-
 			ObjectMapper mapper = new ObjectMapper();
 			//String configFileName = args[0];
 			JsonNode rootNode = mapper.readTree(new File("test.json"));
@@ -96,6 +95,9 @@ public class PhysiCloudLauncher {
 
 						// TODO: when successfully clustered, launch heartbeat verticle, resource verticle, task manager verticle...
 						vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod));
+						
+						// TODO: Create and deploy new RequestHandlerVerticle and RequestTestVerticle...
+						
 					}
 				}
 			};
@@ -108,10 +110,6 @@ public class PhysiCloudLauncher {
 			System.err.println("ERROR: " + e.getMessage());
 			System.exit(-1);
 		} 
-
-
-
 	}
-
 }
 
