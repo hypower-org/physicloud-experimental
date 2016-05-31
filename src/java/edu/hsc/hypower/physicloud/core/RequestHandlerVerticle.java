@@ -3,6 +3,7 @@ package edu.hsc.hypower.physicloud.core;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
@@ -28,8 +29,13 @@ public class RequestHandlerVerticle extends AbstractVerticle {
 		
 		//Event Bus 
 		
-		vertx.eventBus().consumer(KernelChannels.READ_REQUEST, handler)
+		EventBus receiver = vertx.eventBus();
 		
+		receiver.consumer(KernelChannels.READ_REQUEST, message-> {
+			
+		
+				
+
 		//Create System Info/Hardware Abstraction Layer
 		
 		SystemInfo sysInfo = new SystemInfo();
@@ -70,8 +76,12 @@ public class RequestHandlerVerticle extends AbstractVerticle {
 		
 		}
 		
+	}}
 		
-		vertx.eventBus().publish(KernelChannels.READ_REQUEST, infoReply);}
+	
+		
+		
+
 		
 		
 		
