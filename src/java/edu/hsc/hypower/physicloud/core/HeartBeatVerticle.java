@@ -32,7 +32,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	private final String ipAddr;
 	private final Long hbPeriod;
 
-	// Local structure to keep track of timing. If we have not heard from a neighber in a long
+	// Local structure to keep track of timing. If we have not heard from a neighbor in a long
 	// time (now 5 seconds) we need to do something...
 	private HashMap<String,Long> neighborUpdateTimes;
 
@@ -47,7 +47,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		super.start();
 
 		// TODO: Add another periodic event to handleNeighborTimeouts... 
-		
+
 		vertx.setPeriodic(hbPeriod, this::handleHeartbeat);
 
 		vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
@@ -55,7 +55,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 			@Override
 			public void handle(Message<JsonObject> msg) {											
 
-				// TODO: Need a more sophisticated neighbor data book keeping mechanism!		
+				// Need a more sophisticated neighbor data book keeping mechanism!		
 				JsonObject jsonInfo = msg.body();
 				String tempIp = jsonInfo.getString(JsonFieldNames.IP_ADDR);
 				long tempMem = jsonInfo.getLong(JsonFieldNames.MEMORY);
@@ -63,16 +63,23 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				int tempLCore = jsonInfo.getInteger(JsonFieldNames.L_CORES);
 				double tempLoad = jsonInfo.getDouble(JsonFieldNames.LOAD);
 
-
 				System.out.println("...heartbeat received from " + tempIp + " with available memory: " + tempMem);
+
 				if(tempIp != ipAddr){
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
-					// TODO: I removed the process count. The current cpu load is enough.
 					neighborMap.put(tempIp, new NeighborData(tempIp, tempMem, tempPCore, tempLCore, tempLoad));
 
 					// Update the last update time from this neighbor.
+					
 					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());
+					
+					// One idea of how to remove neighborData for nodes that take too long to respond
+					
+					if(System.currentTimeMillis() - neighborUpdateTimes.get(tempIp) > NEIGHBOR_TIMEOUT)	{
+						neighborMap.remove(tempIp);
+					}
+						
 				}
 			}
 		});
@@ -97,7 +104,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		hbInfo.put(JsonFieldNames.P_CORES, pCore);
 		hbInfo.put(JsonFieldNames.L_CORES, lCore);
 		hbInfo.put(JsonFieldNames.LOAD, pLoad);
-		
+
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
 		System.out.println("Heartbeat sent...");
 	}
