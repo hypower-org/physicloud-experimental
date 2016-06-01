@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.hsc.hypower.physicloud.core.HeartBeatVerticle;
+import edu.hsc.hypower.physicloud.core.RequestHandlerVerticle;
+import edu.hsc.hypower.physicloud.core.RequestTestVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
@@ -96,7 +98,9 @@ public class PhysiCloudLauncher {
 						// TODO: when successfully clustered, launch heartbeat verticle, resource verticle, task manager verticle...
 						vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod));
 						
-						// TODO: Create and deploy new RequestHandlerVerticle and RequestTestVerticle...
+						// Create and deploy new RequestHandlerVerticle and RequestTestVerticle...
+						vertx.deployVerticle(new RequestTestVerticle());
+						vertx.deployVerticle(new RequestHandlerVerticle());
 						
 					}
 				}
