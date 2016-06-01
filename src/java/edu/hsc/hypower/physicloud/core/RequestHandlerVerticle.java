@@ -43,53 +43,49 @@ public class RequestHandlerVerticle extends AbstractVerticle {
 	// NOTE! I want it to be a point-to-point system eventually, but what you are doing is fine. 
 	// I will talk with you more in person on Friday...
 	
-	//Create System Info/Hardware Abstraction Layer
-
-	//		SystemInfo sysInfo = new SystemInfo();
-	//		HardwareAbstractionLayer hardLayer = sysInfo.getHardware();
-
-	//Store Ip Address of CPU
-
-	//		String ipAddr = jsonRequest.getString(JsonFieldNames.IP_ADDR);
-	//		String reqInfo = jsonRequest.getString(JsonFieldNames.REQ_RESOUR);
-
-	//Create JSON to store IP address and requested resource
-
-	//		JsonObject infoReply = new JsonObject();
-
-	//Pull requested information and place into JSON file using switch statement
-
-	//		switch(reqInfo){
-	//		
-	//		case "Available Memory": 
-	//			infoReply.put("Requeaddresssted Value", hardLayer.getMemory().getAvailable());
-	//			break;
-	//			
-	//		case "Physical Cores" :
-	//			infoReply.put("Requested Value", hardLayer.getProcessor().getPhysicalProcessorCount());
-	//			break;
-	//			
-	//		case "Logical Cores" : 
-	//			infoReply.put("Requested Value", hardLayer.getProcessor().getLogicalProcessorCount());
-	//			break;
-	//			
-	//		case "Processor Load" :
-	//			infoReply.put("Requested Value", hardLayer.getProcessor().getSystemCpuLoad());
-	//			break;
-	//			
-	//		default:
-	//			infoReply.put("Requested Value", "No Value or Improper Request");
-	//			break;
-	//		
-	//		}
-
-	//	}}
-
-
-
 
 
 	private final void handleRequest(Message<JsonObject> msg){
+		
+		//Create System Info/Hardware Abstraction Layer
+
+		SystemInfo sysInfo = new SystemInfo();
+		HardwareAbstractionLayer hardLayer = sysInfo.getHardware();
+
+		//Store Ip Address of CPU
+
+		String ipAddr = jsonRequest.getString(JsonFieldNames.IP_ADDR);
+		String reqInfo = jsonRequest.getString(JsonFieldNames.REQ_RESOUR);
+
+		//Create JSON to store IP address and requested resource
+
+		JsonObject infoReply = new JsonObject();
+
+		//Pull requested information and place into JSON file using switch statement
+
+		switch(reqInfo)
+		{
+				
+			case "Available Memory": 
+				infoReply.put("Requeaddresssted Value", hardLayer.getMemory().getAvailable());
+				break;
+					
+			case "Physical Cores" :
+				infoReply.put("Requested Value", hardLayer.getProcessor().getPhysicalProcessorCount());
+				break;
+					
+			case "Logical Cores" : 
+				infoReply.put("Requested Value", hardLayer.getProcessor().getLogicalProcessorCount());
+				break;
+					
+			case "Processor Load" :
+				infoReply.put("Requested Value", hardLayer.getProcessor().getSystemCpuLoad());
+				break;
+				
+			default:
+				infoReply.put("Requested Value", "No Value or Improper Request");
+				break;
+		}
 	}
 
 

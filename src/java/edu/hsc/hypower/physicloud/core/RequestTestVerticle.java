@@ -34,6 +34,11 @@ public class RequestTestVerticle extends AbstractVerticle {
 		
 		// Here is a start...set a periodic task that sends a request every second (1000 ms).
 		vertx.setPeriodic(1000, this::sendRequestMessage);
+		
+		private final void sendRequestMessage(Message<JsonObject> msg){
+			
+			
+		}
 
 		//Create a Json to hold the values of the IP Address and the requested resource
 //		JsonObject jsonRequest = new JsonObject();
