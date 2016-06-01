@@ -35,7 +35,7 @@ public class RequestHandlerVerticle extends AbstractVerticle {
 		// and use the function reference notation: "this::functionName"
 		// I will get you started...
 
-		receiver.consumer(KernelChannels.READ_REQUEST, this::handleRequest);
+		receiver.consumer( + "." + KernelChannels.READ_REQUEST, this::handleRequest);
 
 	}
 
