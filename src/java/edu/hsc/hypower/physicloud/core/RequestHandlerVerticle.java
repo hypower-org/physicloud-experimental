@@ -42,66 +42,66 @@ public class RequestHandlerVerticle extends AbstractVerticle {
 	// TODO: All of the handler code should go into the function that I created.
 	// NOTE! I want it to be a point-to-point system eventually, but what you are doing is fine. 
 	// I will talk with you more in person on Friday...
-	
-							
+
+
 
 	private final void handleRequest(Message<JsonObject> msg){
-		
+
 		JsonObject request = msg.body();
-		
+
 		System.out.println("Request Receieved");
-		
+
 		//Create System Info/Hardware Abstraction Layer
 
 		SystemInfo sysInfo = new SystemInfo();
 		HardwareAbstractionLayer hardLayer = sysInfo.getHardware();
 
 		//Store Ip Address of CPU
-		
+
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
 		String reqInfo = request.getString("Requested Value");
-		
+
 		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
-	
+
 
 		//Create JSON to store IP address and requested resource
 
 		JsonObject infoReply = new JsonObject();
-		
+
 		infoReply.put(JsonFieldNames.IP_ADDR, ipAddr);
 
 		//Pull requested information and place into JSON file using switch statement
 
 		switch(reqInfo)
 		{
-				
-			case JsonFieldNames.MEMORY: 
-				infoReply.put("Requested Value", hardLayer.getMemory().getAvailable());
-				break;
-					
-			case JsonFieldNames.P_CORES :
-				infoReply.put("Requested Value", hardLayer.getProcessor().getPhysicalProcessorCount());
-				break;
-					
-			case JsonFieldNames.L_CORES : 
-				infoReply.put("Requested Value", hardLayer.getProcessor().getLogicalProcessorCount());
-				break;
-					
-			case JsonFieldNames.LOAD :
-				infoReply.put("Requested Value", hardLayer.getProcessor().getSystemCpuLoad());
-				break;
-				
-			default:
-				infoReply.put("Requested Value", "No Value or Improper Request");
-				break;
+
+		case JsonFieldNames.MEMORY: 
+			infoReply.put("Requested Value", hardLayer.getMemory().getAvailable());
+			break;
+
+		case JsonFieldNames.P_CORES :
+			infoReply.put("Requested Value", hardLayer.getProcessor().getPhysicalProcessorCount());
+			break;
+
+		case JsonFieldNames.L_CORES : 
+			infoReply.put("Requested Value", hardLayer.getProcessor().getLogicalProcessorCount());
+			break;
+
+		case JsonFieldNames.LOAD :
+			infoReply.put("Requested Value", hardLayer.getProcessor().getSystemCpuLoad());
+			break;
+
+		default:
+			infoReply.put("Requested Value", "No Value or Improper Request");
+			break;
 		}
-		
+
 		msg.reply(infoReply);
 		//This output statement is only valid for the test case of memory being the requested resource
 		//We need to figure out a way to output various data types
 		System.out.println("Value of Requested Resource: " + infoReply.getLong("Requested Value"));
 		System.out.println("Reply Sent!");
-		
+
 	}
 
 
