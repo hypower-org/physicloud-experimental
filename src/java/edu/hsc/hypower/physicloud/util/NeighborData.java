@@ -9,7 +9,6 @@ package edu.hsc.hypower.physicloud.util;
 public final class NeighborData {
 
 	private final String ipAddr;
-//	private final int numProcesses;
 	private final long memAvail;
 	private final int pCore;
 	private final int lCore;
@@ -17,7 +16,6 @@ public final class NeighborData {
 
 	public NeighborData(String ipAddr, long memAvail, int pCore, int lCore, double pLoad) {
 		this.ipAddr = ipAddr;
-//		this.numProcesses = process;
 		this.memAvail = memAvail;
 		this.pCore = pCore;
 		this.lCore = lCore;
@@ -27,10 +25,6 @@ public final class NeighborData {
 	public final String getIpAddr() {
 		return ipAddr;
 	}
-
-//	public int getNumProcesses() {
-//		return numProcesses;
-//	}
 	
 	public long memAvail()	{
 		return memAvail;

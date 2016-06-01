@@ -58,7 +58,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				// TODO: Need a more sophisticated neighbor data book keeping mechanism!		
 				JsonObject jsonInfo = msg.body();
 				String tempIp = jsonInfo.getString(JsonFieldNames.IP_ADDR);
-//				int tempProcesses = jsonInfo.getInteger(JsonFieldNames.PROCESSES);					// I changed this field to current # of processes rather than vendor defined frequency
 				long tempMem = jsonInfo.getLong(JsonFieldNames.MEMORY);
 				int tempPCore = jsonInfo.getInteger(JsonFieldNames.P_CORES);
 				int tempLCore = jsonInfo.getInteger(JsonFieldNames.L_CORES);
@@ -70,7 +69,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
 					// TODO: I removed the process count. The current cpu load is enough.
-//					neighborMap.put(tempIp, new NeighborData(tempIp, tempProcesses, tempMem, tempPCore, tempLCore, tempLoad));
 					neighborMap.put(tempIp, new NeighborData(tempIp, tempMem, tempPCore, tempLCore, tempLoad));
 
 					// Update the last update time from this neighbor.
@@ -88,7 +86,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	private final void handleHeartbeat(Long timerEvent){
 		SystemInfo sysInfo = new SystemInfo();
 		HardwareAbstractionLayer hardwareLayer = sysInfo.getHardware();													
-//		int process = hardwareLayer.getProcessor().getProcessCount();			//Number of current processes		
 		long memAvail = hardwareLayer.getMemory().getAvailable();				//Memory Usage			 
 		int pCore = hardwareLayer.getProcessor().getPhysicalProcessorCount();	//Number of Cores
 		int lCore = hardwareLayer.getProcessor().getLogicalProcessorCount();	//Logical Cores
@@ -96,7 +93,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 		JsonObject hbInfo = new JsonObject();									//Format the JSON with the correct data
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
-//		hbInfo.put(JsonFieldNames.PROCESSES, process);
 		hbInfo.put(JsonFieldNames.MEMORY, memAvail);
 		hbInfo.put(JsonFieldNames.P_CORES, pCore);
 		hbInfo.put(JsonFieldNames.L_CORES, lCore);
