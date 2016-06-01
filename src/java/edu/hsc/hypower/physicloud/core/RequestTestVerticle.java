@@ -26,21 +26,28 @@ public class RequestTestVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 		
+		// TODO: We are not doing write requests yet. Do not need.
+//		vertx.eventBus().consumer(KernelChannels.WRITE_REQUEST, handler) 
 		
-		vertx.eventBus().consumer(KernelChannels.WRITE_REQUEST, handler) 
+		// TODO: All this verticle should do is start a periodic function that sends a message to
+		// the READ_REQUEST channel.
 		
-		
+		// Here is a start...set a periodic task that sends a request every second (1000 ms).
+		vertx.setPeriodic(1000, this::sendRequestMessage);
 
-			
 		//Create a Json to hold the values of the IP Address and the requested resource
-		JsonObject jsonRequest = new JsonObject();
+//		JsonObject jsonRequest = new JsonObject();
+//		
+//		jsonRequest.put(JsonFieldNames.IP_ADDR, value)
+//		jsonRequest.put("Requested Value", value)
 		
-		jsonRequest.put(JsonFieldNames.IP_ADDR, value)
-		jsonRequest.put("Requested Value", value)
+	}
+	
+	private final void sendRequestMessage(Long timerEvent){
 		
+		// Send the message here!
+//		vertx.eventBus().publish(KernelChannels.READ_REQUEST, jsonRequest);
 		
-		//Send the message and associated file to the Request Handler
-		vertx.eventBus().publish(KernelChannels.READ_REQUEST, jsonRequest);
 	}
 	
 }
