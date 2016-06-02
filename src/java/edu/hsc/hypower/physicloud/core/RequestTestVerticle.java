@@ -50,8 +50,8 @@ public class RequestTestVerticle extends AbstractVerticle {
 		jsonRequest.put(JsonFieldNames.IP_ADDR, "1.1.1.0");
 		jsonRequest.put("Requested Value", JsonFieldNames.MEMORY);
 
-		// Send the message here!//Create a Json to hold the values of the IP Address and the requested resource
-		vertx.eventBus().publish( + "." + KernelChannels.READ_REQUEST, jsonRequest);
+		// Send the message here!
+		vertx.eventBus().publish(jsonRequest.getString(JsonFieldNames.IP_ADDR) + "." + KernelChannels.READ_REQUEST, jsonRequest);
 
 		System.out.println("Reqest Sent");
 

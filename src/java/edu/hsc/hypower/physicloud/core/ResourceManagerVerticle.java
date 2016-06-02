@@ -39,8 +39,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	private final long updatePeriod;
 	private LocalMap<String,Object> resourceMap;
 
-	// TODO: Not a legal position for this statement - needs to be within the start() method.
-	receiver.consumer(systIn.get + "." + KernelChannels.READ_REQUEST, this::handleRequest);
+
 	
 	public ResourceManagerVerticle(long up){
 		SystemInfo si = new SystemInfo();
@@ -56,6 +55,10 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		
 		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 	}
+	
+	
+	receiver.consumer(jsonRequest.getString(JsonFieldNames.IP_ADDR)  + "." + KernelChannels.READ_REQUEST, this::handleRequest);
+
 	
 	private final void handleRequest(Message<JsonObject> msg){
 
