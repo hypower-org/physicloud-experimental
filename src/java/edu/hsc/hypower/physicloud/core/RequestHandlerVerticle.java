@@ -23,6 +23,10 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
 
 public class RequestHandlerVerticle extends AbstractVerticle {
 
+	private String ipAddr;
+	
+	// TODO: Create the constructor here to pass in the IP address as a class variable.
+	
 	@Override
 	public void start() throws Exception{
 		super.start();

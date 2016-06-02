@@ -31,19 +31,15 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
 public class ResourceManagerVerticle extends AbstractVerticle {
 	
 	//Event Bus 
-
 	EventBus receiver = vertx.eventBus();
 	
-	
-
-	// TODO: Use the OSHI library to load the system properties.
 	private final OperatingSystem os;
 	private final CentralProcessor cp;
 	
 	private final long updatePeriod;
 	private LocalMap<String,Object> resourceMap;
 
-	
+	// TODO: Not a legal position for this statement - needs to be within the start() method.
 	receiver.consumer(systIn.get + "." + KernelChannels.READ_REQUEST, this::handleRequest);
 	
 	public ResourceManagerVerticle(long up){
