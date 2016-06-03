@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.hsc.hypower.physicloud.core.HeartBeatVerticle;
 import edu.hsc.hypower.physicloud.core.RequestHandlerVerticle;
 import edu.hsc.hypower.physicloud.core.RequestTestVerticle;
+import edu.hsc.hypower.physicloud.core.ResourceManagerVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
@@ -55,34 +56,34 @@ public class PhysiCloudLauncher {
 
 			HashMap<String, ArrayList<String>> deviceMap = new HashMap<String, ArrayList<String>>(); 
 
-			Iterator<String> it = rootNode.fieldNames();
-			while(it.hasNext())
-			{
-				String fieldName = it.next();		
-				if(fieldName.indexOf('.') != -1)
-				{
-					String devName = fieldName.substring(fieldName.indexOf('.')+1);				
-					JsonNode tempNode = rootNode.get(fieldName);
-
-					Iterator<String> internalIt = tempNode.fieldNames();
-					ArrayList<String> forMap = new ArrayList<String>();
-					System.out.println(devName);
-
-					while(internalIt.hasNext())
-					{
-						String nextField = internalIt.next();
-						String sensorType = tempNode.get(nextField).asText();
-						String locNum = nextField.substring(4,5);
-						String last = sensorType + '.' + locNum;
-						forMap.add(last);
-						System.out.println(last);								
-					}
-
-					// TODO: The results of this map should be submitted to the HeartBeatVerticle
-					deviceMap.put(devName, forMap);
-
-				}
-			}
+//			Iterator<String> it = rootNode.fieldNames();
+//			while(it.hasNext())
+//			{
+//				String fieldName = it.next();		
+//				if(fieldName.indexOf('.') != -1)
+//				{
+//					String devName = fieldName.substring(fieldName.indexOf('.')+1);				
+//					JsonNode tempNode = rootNode.get(fieldName);
+//
+//					Iterator<String> internalIt = tempNode.fieldNames();
+//					ArrayList<String> forMap = new ArrayList<String>();
+//					System.out.println(devName);
+//
+//					while(internalIt.hasNext())
+//					{
+//						String nextField = internalIt.next();
+//						String sensorType = tempNode.get(nextField).asText();
+//						String locNum = nextField.substring(4,5);
+//						String last = sensorType + '.' + locNum;
+//						forMap.add(last);
+//						System.out.println(last);								
+//					}
+//
+//					// TODO: The results of this map should be submitted to the HeartBeatVerticle
+//					deviceMap.put(devName, forMap);
+//
+//				}
+//			}
 
 			VertxOptions opts = new VertxOptions()
 					.setWorkerPoolSize(Runtime.getRuntime().availableProcessors())
@@ -96,12 +97,12 @@ public class PhysiCloudLauncher {
 						Vertx vertx = asyncRes.result();
 
 						// TODO: when successfully clustered, launch heartbeat verticle, resource verticle, task manager verticle...
-						vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod));
-						
+						vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod), new DeploymentOptions().setWorker(true));
+						vertx.deployVerticle(new ResourceManagerVerticle(500, rootNode));
 						// Create and deploy new RequestHandlerVerticle and RequestTestVerticle...
-						vertx.deployVerticle(new RequestTestVerticle());
-						vertx.deployVerticle(new RequestHandlerVerticle());
-						
+//						vertx.deployVerticle(new RequestTestVerticle(),new DeploymentOptions().setWorker(true));
+//						vertx.deployVerticle(new RequestHandlerVerticle(), new DeploymentOptions().setWorker(true));
+
 					}
 				}
 			};
