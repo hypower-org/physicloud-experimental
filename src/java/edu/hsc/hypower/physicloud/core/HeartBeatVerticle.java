@@ -58,27 +58,34 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				// Need a more sophisticated neighbor data book keeping mechanism!		
 				JsonObject jsonInfo = msg.body();
 				String tempIp = jsonInfo.getString(JsonFieldNames.IP_ADDR);
-				long tempMem = jsonInfo.getLong(JsonFieldNames.MEMORY);
-				int tempPCore = jsonInfo.getInteger(JsonFieldNames.P_CORES);
-				int tempLCore = jsonInfo.getInteger(JsonFieldNames.L_CORES);
-				double tempLoad = jsonInfo.getDouble(JsonFieldNames.LOAD);
+//				long tempMem = jsonInfo.getLong(JsonFieldNames.MEMORY);
+//				int tempPCore = jsonInfo.getInteger(JsonFieldNames.P_CORES);
+//				int tempLCore = jsonInfo.getInteger(JsonFieldNames.L_CORES);
+//				double tempLoad = jsonInfo.getDouble(JsonFieldNames.LOAD);
 
-				System.out.println("...heartbeat received from " + tempIp + " with available memory: " + tempMem);
+//				System.out.println("...heartbeat received from " + tempIp + " with available memory: " + tempMem);
 
+				System.out.println("...heartbeat received from " + tempIp);
+
+				
 				if(tempIp != ipAddr){
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
-					neighborMap.put(tempIp, new NeighborData(tempIp, tempMem, tempPCore, tempLCore, tempLoad));
+//					neighborMap.put(tempIp, new NeighborData(tempIp, tempMem, tempPCore, tempLCore, tempLoad));
 
+					neighborMap.put(tempIp, new NeighborData(tempIp));
+
+					
 					// Update the last update time from this neighbor.
 					
 					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());
 					
 					// One idea of how to remove neighborData for nodes that take too long to respond
 					
-					if(System.currentTimeMillis() - neighborUpdateTimes.get(tempIp) > NEIGHBOR_TIMEOUT)	{
-						neighborMap.remove(tempIp);
-					}
+//					if(System.currentTimeMillis() - neighborUpdateTimes.get(tempIp) > NEIGHBOR_TIMEOUT)	{
+//						neighborMap.remove(tempIp);
+//						System.out.println(tempIp + "removed from cluster");
+//					}
 						
 				}
 			}
@@ -91,19 +98,19 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	 * @param timerEvent
 	 */
 	private final void handleHeartbeat(Long timerEvent){
-		SystemInfo sysInfo = new SystemInfo();
-		HardwareAbstractionLayer hardwareLayer = sysInfo.getHardware();													
-		long memAvail = hardwareLayer.getMemory().getAvailable();				//Memory Usage			 
-		int pCore = hardwareLayer.getProcessor().getPhysicalProcessorCount();	//Number of Cores
-		int lCore = hardwareLayer.getProcessor().getLogicalProcessorCount();	//Logical Cores
-		double pLoad = hardwareLayer.getProcessor().getSystemCpuLoad();			//Task Load
+//		SystemInfo sysInfo = new SystemInfo();
+//		HardwareAbstractionLayer hardwareLayer = sysInfo.getHardware();													
+//		long memAvail = hardwareLayer.getMemory().getAvailable();				//Memory Usage			 
+//		int pCore = hardwareLayer.getProcessor().getPhysicalProcessorCount();	//Number of Cores
+//		int lCore = hardwareLayer.getProcessor().getLogicalProcessorCount();	//Logical Cores
+//		double pLoad = hardwareLayer.getProcessor().getSystemCpuLoad();			//Task Load
 
 		JsonObject hbInfo = new JsonObject();									//Format the JSON with the correct data
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
-		hbInfo.put(JsonFieldNames.MEMORY, memAvail);
-		hbInfo.put(JsonFieldNames.P_CORES, pCore);
-		hbInfo.put(JsonFieldNames.L_CORES, lCore);
-		hbInfo.put(JsonFieldNames.LOAD, pLoad);
+//		hbInfo.put(JsonFieldNames.MEMORY, memAvail);
+//		hbInfo.put(JsonFieldNames.P_CORES, pCore);
+//		hbInfo.put(JsonFieldNames.L_CORES, lCore);
+//		hbInfo.put(JsonFieldNames.LOAD, pLoad);
 
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
 		System.out.println("Heartbeat sent...");
