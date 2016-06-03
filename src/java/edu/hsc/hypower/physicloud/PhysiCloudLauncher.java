@@ -96,11 +96,24 @@ public class PhysiCloudLauncher {
 						Vertx vertx = asyncRes.result();
 
 						// TODO: when successfully clustered, launch heartbeat verticle, resource verticle, task manager verticle...
-						vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod));
+//						vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod));
+						vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod), 
+								new DeploymentOptions().setWorker(true), 
+								new Handler<AsyncResult<String>>(){
+
+							@Override
+							public void handle(AsyncResult<String> event) {
+								System.out.println("Deployed HB!!!");
+								
+							}
+							
+						});
+//						vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod),
+//								new DeploymentOptions().setWorker(true));
 						
 						// Create and deploy new RequestHandlerVerticle and RequestTestVerticle...
-						vertx.deployVerticle(new RequestTestVerticle());
-						vertx.deployVerticle(new RequestHandlerVerticle());
+//						vertx.deployVerticle(new RequestTestVerticle());
+//						vertx.deployVerticle(new RequestHandlerVerticle());
 						
 					}
 				}
