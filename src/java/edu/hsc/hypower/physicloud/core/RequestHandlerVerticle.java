@@ -24,9 +24,9 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
 public class RequestHandlerVerticle extends AbstractVerticle {
 
 	private String ipAddr;
-	
+
 	// TODO: Create the constructor here to pass in the IP address as a class variable.
-	
+
 	@Override
 	public void start() throws Exception{
 		super.start();
@@ -39,7 +39,7 @@ public class RequestHandlerVerticle extends AbstractVerticle {
 		// and use the function reference notation: "this::functionName"
 		// I will get you started...
 
-		receiver.consumer( + "." + KernelChannels.READ_REQUEST, this::handleRequest);
+		receiver.consumer(KernelChannels.READ_REQUEST, this::handleRequest);
 
 	}
 
@@ -66,7 +66,6 @@ public class RequestHandlerVerticle extends AbstractVerticle {
 		String reqInfo = request.getString("Requested Value");
 
 		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
-
 
 		//Create JSON to store IP address and requested resource
 
