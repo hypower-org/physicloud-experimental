@@ -7,8 +7,6 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
-import oshi.SystemInfo;
-import oshi.hardware.HardwareAbstractionLayer;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -55,11 +53,6 @@ public class RequestHandlerVerticle extends AbstractVerticle {
 
 		System.out.println("Request Receieved");
 
-		//Create System Info/Hardware Abstraction Layer
-
-		SystemInfo sysInfo = new SystemInfo();
-		HardwareAbstractionLayer hardLayer = sysInfo.getHardware();
-
 		//Store Ip Address of CPU
 
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
@@ -74,31 +67,6 @@ public class RequestHandlerVerticle extends AbstractVerticle {
 		infoReply.put(JsonFieldNames.IP_ADDR, ipAddr);
 
 		//Pull requested information and place into JSON file using switch statement
-
-		switch(reqInfo)
-		{
-
-		case JsonFieldNames.MEMORY: 
-			infoReply.put("Requested Value", hardLayer.getMemory().getAvailable());
-			break;
-
-		case JsonFieldNames.P_CORES :
-			infoReply.put("Requested Value", hardLayer.getProcessor().getPhysicalProcessorCount());
-			break;
-
-		case JsonFieldNames.L_CORES : 
-			infoReply.put("Requested Value", hardLayer.getProcessor().getLogicalProcessorCount());
-			break;
-
-		case JsonFieldNames.LOAD :
-			infoReply.put("Requested Value", hardLayer.getProcessor().getSystemCpuLoad());
-			break;
-
-		default:
-			infoReply.put("Requested Value", "No Value or Improper Request");
-			break;
-		}
-
 		msg.reply(infoReply);
 		//This output statement is only valid for the test case of memory being the requested resource
 		//We need to figure out a way to output various data types

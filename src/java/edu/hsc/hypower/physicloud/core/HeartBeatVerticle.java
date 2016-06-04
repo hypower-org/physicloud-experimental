@@ -6,8 +6,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
-import oshi.SystemInfo;
-import oshi.hardware.HardwareAbstractionLayer;
 
 import java.io.File;
 import java.io.FileWriter;
