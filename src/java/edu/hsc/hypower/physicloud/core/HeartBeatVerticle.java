@@ -45,13 +45,9 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 
-		// TODO: Add another periodic event to handleNeighborTimeouts... 
-
 		vertx.setPeriodic(hbPeriod, this::handleHeartbeat);
 
 		vertx.setPeriodic(2000, this::timeoutChecker);
-
-
 
 		vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
 
@@ -61,35 +57,16 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				// Need a more sophisticated neighbor data book keeping mechanism!		
 				JsonObject jsonInfo = msg.body();
 				String tempIp = jsonInfo.getString(JsonFieldNames.IP_ADDR);
-				//				long tempMem = jsonInfo.getLong(JsonFieldNames.MEMORY);
-				//				int tempPCore = jsonInfo.getInteger(JsonFieldNames.P_CORES);
-				//				int tempLCore = jsonInfo.getInteger(JsonFieldNames.L_CORES);
-				//				double tempLoad = jsonInfo.getDouble(JsonFieldNames.LOAD);
-
-				//				System.out.println("...heartbeat received from " + tempIp + " with available memory: " + tempMem);
-
-				System.out.println("...heartbeat received from " + tempIp);
-
 
 				if(tempIp != ipAddr){
+					System.out.println("Heartbeat received from " + tempIp);
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-
-					//					neighborMap.put(tempIp, new NeighborData(tempIp, tempMem, tempPCore, tempLCore, tempLoad));
 
 					neighborMap.put(tempIp, new NeighborData(tempIp));
 
 
 					// Update the last update time from this neighbor.
-
 					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());
-
-					// One idea of how to remove neighborData for nodes that take too long to respond
-
-					//					if(System.currentTimeMillis() - neighborUpdateTimes.get(tempIp) > NEIGHBOR_TIMEOUT)	{
-					//						neighborMap.remove(tempIp);
-					//						System.out.println(tempIp + "removed from cluster");
-					//					}
-
 				}
 			}
 		});
@@ -101,22 +78,12 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	 * @param timerEvent
 	 */
 	private final void handleHeartbeat(Long timerEvent){
-		//		SystemInfo sysInfo = new SystemInfo();
-		//		HardwareAbstractionLayer hardwareLayer = sysInfo.getHardware();													
-		//		long memAvail = hardwareLayer.getMemory().getAvailable();				//Memory Usage			 
-		//		int pCore = hardwareLayer.getProcessor().getPhysicalProcessorCount();	//Number of Cores
-		//		int lCore = hardwareLayer.getProcessor().getLogicalProcessorCount();	//Logical Cores
-		//		double pLoad = hardwareLayer.getProcessor().getSystemCpuLoad();			//Task Load
 
-		JsonObject hbInfo = new JsonObject();									//Format the JSON with the correct data
+		JsonObject hbInfo = new JsonObject();
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
-		//		hbInfo.put(JsonFieldNames.MEMORY, memAvail);
-		//		hbInfo.put(JsonFieldNames.P_CORES, pCore);
-		//		hbInfo.put(JsonFieldNames.L_CORES, lCore);
-		//		hbInfo.put(JsonFieldNames.LOAD, pLoad);
-
+		// TODO: Get available resources and publish within the heartbeat.
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
-		System.out.println("Heartbeat sent...");
+//		System.out.println("Heartbeat sent...");
 	}
 
 	@Override
@@ -125,23 +92,19 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	}	
 
 	private final void timeoutChecker(Long timerEvent){
-		
-		String ipHold = new String();
 
+		String neighborTimeoutKey = new String();
 		for(Entry<String, Long> entry : neighborUpdateTimes.entrySet()){
-			
 			if(System.currentTimeMillis() - entry.getValue()  > NEIGHBOR_TIMEOUT){	
-				ipHold = entry.getKey();
+				neighborTimeoutKey = entry.getKey();
 				LocalMap<String, NeighborData> removalMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 				removalMap.remove(entry.getKey());
-				System.out.println(ipHold + " removed from cluster");
+				System.out.println(neighborTimeoutKey + " removed from cluster");
 			}
-			
-		
 		}
-		
-		if(!ipHold.isEmpty()){
-			neighborUpdateTimes.remove(ipHold);
+
+		if(!neighborTimeoutKey.isEmpty()){
+			neighborUpdateTimes.remove(neighborTimeoutKey);
 		}
 
 	}

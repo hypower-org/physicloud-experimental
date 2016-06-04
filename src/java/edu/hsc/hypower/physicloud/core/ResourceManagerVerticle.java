@@ -5,18 +5,12 @@ import edu.hsc.hypower.physicloud.KernelChannels;
 import edu.hsc.hypower.physicloud.KernelMapNames;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -44,19 +38,13 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
 
 public class ResourceManagerVerticle extends AbstractVerticle {
 
-	//Event Bus 
-	//	EventBus receiver = vertx.eventBus();
-
 	private final JsonNode rootNode;
 	private static final String PHIDGET_IKIT = "PhidgetIKit";
 	private static final String PHIDGET_GPS = "PhidgetGPS";
 
 	private final long updatePeriod;
 
-
 	private LocalMap<String,Object> resourceMap;
-
-
 
 	public ResourceManagerVerticle(long up, JsonNode node){
 		updatePeriod = up;
@@ -67,11 +55,11 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 
-		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);		
+		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
+		// TODO: will need another way (non-oshi or jhardware) - not a priority right now
 		//		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 
 		//	START PARSING
-
 		int devCount = 0;
 
 		Iterator<String> it = rootNode.fieldNames();
@@ -148,18 +136,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				{
 					// specify for phidget gps
 				}
-
-
 			}
 		} 
-
-
-
-
-
-
-
-
 	}
 
 
@@ -193,10 +171,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	public void stop() throws Exception {
 		// TODO Auto-generated method stub
 		super.stop();
-	}
-
-	private static final void updateCyberResources(Long l){
-
 	}
 
 }
