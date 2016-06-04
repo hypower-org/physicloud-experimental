@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.hsc.hypower.physicloud.core.DynamicVerticle;
 import edu.hsc.hypower.physicloud.core.HeartBeatVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
@@ -14,6 +15,11 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 
+/**
+ * Class that experiments with setting up the api for clojure to access the PhysiCloud runtime.
+ * @author pjmartin
+ *
+ */
 public final class PhysiCloudFromClojure {
 
 	private Vertx vertxHook;
@@ -53,21 +59,11 @@ public final class PhysiCloudFromClojure {
 						vertxHook = asyncRes.result();
 
 						vertxHook.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod), 
-								new DeploymentOptions().setWorker(true), 
-								new Handler<AsyncResult<String>>(){
-
-							@Override
-							public void handle(AsyncResult<String> event) {
-								System.out.println("Deployed HB!!!");
-
-							}
-
-						});						
+								new DeploymentOptions().setWorker(true));						
 					}
 				}
 			};
 			Vertx.clusteredVertx(opts, resultHandler);
-
 
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
@@ -92,4 +88,17 @@ public final class PhysiCloudFromClojure {
 		});
 	}
 
+	public final void deployFunction(final String fnName, final String fn, long updatePeriod){
+		
+		vertxHook.deployVerticle(new DynamicVerticle(fnName, fn, updatePeriod), 
+				result -> {
+					if(result.succeeded()){
+						System.out.println(" DynamicVerticle " + fnName + " deployed!");
+					}
+				});
+		
+		vertxHook.eventBus().consumer(fnName, msg -> { System.out.println(msg.body()); });
+		
+	}
+	
 }

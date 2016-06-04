@@ -15,7 +15,7 @@ public class DynamicVerticleBootstrap {
 		mainVtx.eventBus().consumer("incoming", msg -> { System.out.println("Received " + msg.body());});
 
 		String testFuncStr = "(defn add-one [n] (+ 1 n))";
-		mainVtx.deployVerticle(new DynamicVerticle("add-one", testFuncStr));
+//		mainVtx.deployVerticle(new DynamicVerticle("add-one", testFuncStr));
 		
 	}
 

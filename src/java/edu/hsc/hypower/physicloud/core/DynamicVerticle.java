@@ -2,6 +2,7 @@ package edu.hsc.hypower.physicloud.core;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import clojure.java.api.Clojure;
 import clojure.lang.Compiler;
@@ -22,11 +23,16 @@ public class DynamicVerticle extends AbstractVerticle {
 	
 	private final String funcString;
 	private final IFn function;
+	private final String name;
+	private final long timerPeriod;
 	
-	public DynamicVerticle(String fnName, String fnString){
+	public DynamicVerticle(String fnName, String fnString, long period){
+		name = fnName;
+		timerPeriod = period;
 		
 		// Use clojure to read and load the supplied function.
 		funcString = NS + fnString;
+		// TODO: only handles defn functions! Anonymous functions to come...
 		Clojure.read(funcString);
 		Compiler.load(new StringReader(funcString));
 		function = Clojure.var("user", fnName);
@@ -34,33 +40,23 @@ public class DynamicVerticle extends AbstractVerticle {
 	
 	@Override
 	public void start() throws Exception {
-		
-		vertx.setPeriodic(500, new Handler<Long>(){
-
-			@Override
-			public void handle(Long l) {
-				LocalMap<String, Long> dataMap = vertx.sharedData().getLocalMap("localData");
-				System.out.println("Current value = " + dataMap.get("currVal"));
-				Object val = function.invoke(dataMap.get("currVal"));
-				vertx.eventBus().publish("incoming", val.toString());
-			}
-			
-		});
-		
-		vertx.setPeriodic(400, new Handler<Long>(){
-			@Override
-			public void handle(Long l) {
-				LocalMap<String, Long> dataMap = vertx.sharedData().getLocalMap("localData");
-				dataMap.put("currVal", (long) (Math.floor(Math.random() * 100)));
-			}
-		});
-		
+		vertx.setPeriodic(timerPeriod, this::executeOnTimer);
 	}
 
 	@Override
 	public void stop() throws Exception {
-		System.err.println("Done!");
+		System.err.println(name + " execution stopped.");
 		super.stop();
+	}
+	
+	private final void executeOnTimer(Long timerEvent){
+		
+		// Invoke is hacky right now!!!
+		Object value = function.invoke(new Float((float)Math.random()));
+		Double numericValue = (Double) value;
+		System.out.println(numericValue);
+		vertx.eventBus().publish(name, new JsonObject().put("value", numericValue));
+		
 	}
 	
 }
