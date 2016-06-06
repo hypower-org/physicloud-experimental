@@ -10,6 +10,7 @@ import io.vertx.core.shareddata.LocalMap;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,7 +50,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 		vertx.setPeriodic(2000, this::timeoutChecker);
 		
-		vertx.setPeriodic(2000, this::removalChecker);
+//		vertx.setPeriodic(5000, this::removalChecker);
 
 		vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
 
@@ -72,6 +73,9 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				}
 			}
 		});
+		
+		
+		
 
 	}
 
@@ -80,9 +84,38 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	 * @param timerEvent
 	 */
 	private final void handleHeartbeat(Long timerEvent){
-
+		
 		JsonObject hbInfo = new JsonObject();
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
+		
+		vertx.eventBus().consumer(KernelChannels.KERNEL, new Handler<Message<StringBuffer>>(){
+			
+			
+			ArrayList<String> sensorArray = new ArrayList<String>();
+			LocalMap<String, Map<String,Float>> deviceMap = vertx.sharedData().getLocalMap(KernelChannels.KERNEL);
+			String[] parseHolder;
+			
+			@Override
+			public void handle(Message<StringBuffer> msg){
+				
+				String buff = msg.body().toString();
+				
+				
+				String delims = "[,]+";
+				while(!buff.isEmpty()){
+					parseHolder = buff.split(delims);
+				}	
+				
+				for(int i = 0; i < parseHolder.length; i++){
+					sensorArray.clear();
+					for(String key : deviceMap.get(parseHolder[i]).keySet()){
+						sensorArray.add(key);
+					}
+					hbInfo.put(parseHolder[i], sensorArray);
+				}
+				
+			}	
+		});
 		// TODO: Get available resources and publish within the heartbeat.
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
 //		System.out.println("Heartbeat sent...");
@@ -111,13 +144,14 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 	}
 	
-	private final void removalChecker(Long timerEvent){
-		LocalMap<String,NeighborData> rMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-		
-		System.out.println(rMap.keySet());
-		System.out.println(rMap.values());
-		
-	}
+//	private final void removalChecker(Long timerEvent){
+//		LocalMap<String,NeighborData> rMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+//		
+//		for(String key: rMap.keySet()){
+//			System.out.println(key + " " + rMap.get(key));
+//		}
+//		
+//	}
 
 }
 
