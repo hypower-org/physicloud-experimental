@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import edu.hsc.hypower.physicloud.KernelChannels;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Vertx;
 
 public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 
@@ -26,7 +27,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		digitalIn = dIn;
 		digitalOut = dOut;
 		sensorData = null;
-		
+
 	}
 
 
@@ -34,6 +35,14 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 		ikit = new InterfaceKitPhidget();
+
+		// Now that device is attached, collect data here.
+		
+//		try {
+//			vertx.setPeriodic(500, this::updateSensorData);
+//		} catch (PhidgetException e) {
+//			e.printStackTrace();
+//		}
 		
 		//	Begin to read sensor data
 		ikit.openAny();
@@ -43,22 +52,36 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 			public void attached(AttachEvent ae)	{
 				System.out.println("A new Phidget IKIT has been attached.");
 
-				// Now that device is attached, collect data here.
 
 			}
 		});
-
-
-
-
-		vertx.setPeriodic(500, this::updateSensorData);
-
 	}
 
 
-	public final Map<String, Float> updateSensorData(Long l)	{
+	public final Map<String, Float> updateSensorData(Long l) throws PhidgetException	{
 
-//		for(int i = 0; i < ikit.)
+		//	Update Analog In Sensors
+		
+		for(int i = 0; i < analogIn.keySet().size(); i++)	{
+			
+			float data = ikit.getSensorValue(i);
+			String sensorType = analogIn.get(new Integer(i));
+			sensorData.put(sensorType + '.' + Integer.toString(i), data);
+
+		}
+		
+		//	Update Digital In Sensors
+		
+		// TODO: We need a separate map for digital in's and out's. Should we make two separate maps, or should we try to make sensorData a template map?
+		
+		for(int i = 0; i < digitalIn.keySet().size(); i++)	{
+			
+			boolean data = ikit.getInputState(i);
+			String sensorType = digitalIn.get(new Integer(i));
+//			sensorData.put(sensorType + '.' + Integer.toString(i), data);
+
+		}
+		
 		return sensorData;
 
 

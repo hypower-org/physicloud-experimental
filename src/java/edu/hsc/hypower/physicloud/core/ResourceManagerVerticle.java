@@ -131,12 +131,13 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 						}
 					}
 
-					// Deploy PhidgetIKitVerticle
 
+					// Publish device name
 					String phidgetIKITName = PHIDGET_IKIT + Integer.toString(devCount);
-					deviceNameBuffer.append(phidgetIKITName)
-									.append(',');
+//					deviceNameBuffer.append(phidgetIKITName)
+//					.append(',');
 
+					// Deploy PhidgetIKitVerticle
 					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
 							new DeploymentOptions().setWorker(true));
 				}
