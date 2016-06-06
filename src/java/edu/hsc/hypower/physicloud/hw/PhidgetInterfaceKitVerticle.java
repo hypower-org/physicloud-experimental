@@ -58,8 +58,8 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 
 	public final Map<String, Float> updateSensorData(Long l)	{
 
-		for(int i = 0; i < ikit.)
-		return sensorData;
+//		for(int i = 0; i < ikit.)
+//		return sensorData;
 
 
 	}
