@@ -3,6 +3,7 @@ package edu.hsc.hypower.physicloud.core;
 import edu.hsc.hypower.physicloud.KernelChannels;
 
 import edu.hsc.hypower.physicloud.KernelMapNames;
+import edu.hsc.hypower.physicloud.hw.PhidgetInterfaceKitVerticle;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
 
 import io.vertx.core.*;
@@ -41,7 +42,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	private final JsonNode rootNode;
 	private static final String PHIDGET_IKIT = "PhidgetIKit";
 	private static final String PHIDGET_GPS = "PhidgetGPS";
-
 	private final long updatePeriod;
 
 	private LocalMap<String,Object> resourceMap;
@@ -59,8 +59,13 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		// TODO: will need another way (non-oshi or jhardware) - not a priority right now
 		//		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 
-		//	START PARSING
+
+		// Create a StringBuffer to hold the name of the device so that it can be referenced by HBVerticle
 		int devCount = 0;
+		StringBuffer deviceNameBuffer = new StringBuffer();		
+
+
+		//	START PARSING
 
 		Iterator<String> it = rootNode.fieldNames();
 		while(it.hasNext())
@@ -127,15 +132,23 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					}
 
 					// Deploy PhidgetIKitVerticle
-					// String ID = PHIDGET_IKIT + (String) devCount
-					// vertx.deployVerticle(new PhidgetIKitVerticle(ikitAnIn, ikitDIn, ikitDOut, ID));
 
+					String phidgetIKITName = PHIDGET_IKIT + Integer.toString(devCount);
+					deviceNameBuffer.append(phidgetIKITName)
+									.append(',');
+
+					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
+							new DeploymentOptions().setWorker(true));
 				}
 
 				if(devName == PHIDGET_GPS)
 				{
 					// specify for phidget gps
 				}
+
+				//	Publish buffer with all device names to be parsed by HeartBeatVerticle
+
+				vertx.eventBus().publish(KernelChannels.KERNEL, deviceNameBuffer);
 			}
 		} 
 	}

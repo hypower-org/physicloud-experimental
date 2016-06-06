@@ -49,7 +49,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 		vertx.setPeriodic(2000, this::timeoutChecker);
 		
-		vertx.setPeriodic(2000, this::removalChecker);
+//		vertx.setPeriodic(2000, this::removalChecker);
 
 		vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
 
@@ -111,13 +111,13 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 	}
 	
-	private final void removalChecker(Long timerEvent){
-		LocalMap<String,NeighborData> rMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-		
-		System.out.println(rMap.keySet());
-		System.out.println(rMap.values());
-		
-	}
+//	private final void removalChecker(Long timerEvent){
+//		LocalMap<String,NeighborData> rMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+//		
+//		System.out.println(rMap.keySet());
+//		System.out.println(rMap.values());
+//		
+//	}
 
 }
 
