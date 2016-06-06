@@ -111,11 +111,12 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 	}
 	
-//	private final void removalChecker(Long timerEvent){
+///	private final void removalChecker(Long timerEvent){
 //		LocalMap<String,NeighborData> rMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 //		
-//		System.out.println(rMap.keySet());
-//		System.out.println(rMap.values());
+//		for(String key: rMap.keySet()){
+//			System.out.println(key + " " + rMap.get(key));
+//		}
 //		
 //	}
 
