@@ -3,6 +3,7 @@ package edu.hsc.hypower.physicloud.core;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
@@ -88,47 +89,29 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		//Creates the initial JSON and places the IP address into the file
 		JsonObject hbInfo = new JsonObject();
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
-		
-		// TODO: You are not consuming from the kernel. It is simpler: on the hearbeat, read the LocalMap
-		// that manages the devices. See evernote.
-		vertx.eventBus().consumer(KernelChannels.KERNEL, new Handler<Message<StringBuffer>>(){
 			
-			//An ArrayList, a LocalMap of shared data, and an array of strings were created
-			//to allow for the storage and parsing of the receieved information
-			ArrayList<String> sensorArray = new ArrayList<String>();
+		ArrayList<String> sensorArray = new ArrayList<String>();	
+		String[] parseHolder;
 			
-			//TODO: No, we do not want a local map with the same name as the KERNEL channel.
-			// Map names are in the KernelMapNames class.
-			LocalMap<String, Map<String,Float>> deviceMap = vertx.sharedData().getLocalMap(KernelChannels.KERNEL);
-			// TODO: You want to read the AVAIALABLE_DEVICES map keys and then extract the key for
-			// EACH sensor found in their map. Publish as a JsonMessage.
-			
-			String[] parseHolder;
-			
-			@Override
-			public void handle(Message<StringBuffer> msg){
+		//Store the receieved buffer and convert it to a string
+		String buff = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES)
+					  .get("devices").toString();
 				
-				//Store the receieved buffer and converts it to a string
-				String buff = msg.body().toString();
+		//Split into device names and store in array
+		String delims = "[,]+";
+		while(!buff.isEmpty()){
+			parseHolder = buff.split(delims);
+		}	
 				
-				//String is split into device names and stored
-				String delims = "[,]+";
-				while(!buff.isEmpty()){
-					parseHolder = buff.split(delims);
-				}	
-				
-				//Stores list of sensors in array and places proper information into JSON
-				for(int i = 0; i < parseHolder.length; i++){
-					sensorArray.clear();
-					for(String key : deviceMap.get(parseHolder[i]).keySet()){
-						sensorArray.add(key);
-					}
-					hbInfo.put(parseHolder[i], sensorArray);
+		//Store list of sensors in array and place proper information into JSON
+		for(int i = 0; i < parseHolder.length; i++){
+			sensorArray.clear();
+			for(String key : vertx.sharedData().getLocalMap(parseHolder[i]).keySet()){ //This is giving an error 
+				sensorArray.add(key);
 				}
+			hbInfo.put(parseHolder[i], sensorArray);
+			}
 				
-			}	
-		});
-		// TODO: Get available resources and publish within the heartbeat.
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
 //		System.out.println("Heartbeat sent...");
 	}
