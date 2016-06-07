@@ -85,12 +85,14 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	 */
 	private final void handleHeartbeat(Long timerEvent){
 		
+		//Creates the initial JSON and places the IP address into the file
 		JsonObject hbInfo = new JsonObject();
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
 		
 		vertx.eventBus().consumer(KernelChannels.KERNEL, new Handler<Message<StringBuffer>>(){
 			
-			
+			//An ArrayList, a LocalMap of shared data, and an array of strings were created
+			//to allow for the storage and parsing of the receieved information
 			ArrayList<String> sensorArray = new ArrayList<String>();
 			LocalMap<String, Map<String,Float>> deviceMap = vertx.sharedData().getLocalMap(KernelChannels.KERNEL);
 			String[] parseHolder;
@@ -98,14 +100,16 @@ public class HeartBeatVerticle extends AbstractVerticle {
 			@Override
 			public void handle(Message<StringBuffer> msg){
 				
+				//Store the receieved buffer and converts it to a string
 				String buff = msg.body().toString();
 				
-				
+				//String is split into device names and stored
 				String delims = "[,]+";
 				while(!buff.isEmpty()){
 					parseHolder = buff.split(delims);
 				}	
 				
+				//Stores list of sensors in array and places proper information into JSON
 				for(int i = 0; i < parseHolder.length; i++){
 					sensorArray.clear();
 					for(String key : deviceMap.get(parseHolder[i]).keySet()){
