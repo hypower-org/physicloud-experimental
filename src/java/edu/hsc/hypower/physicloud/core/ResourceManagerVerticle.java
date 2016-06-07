@@ -45,7 +45,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 	private final long updatePeriod;
 
-//	private LocalMap<String,Object> resourceMap;
+	//	private LocalMap<String,Object> resourceMap;
 
 	public ResourceManagerVerticle(long up, JsonNode node){
 		updatePeriod = up;
@@ -56,11 +56,10 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 
-//		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
+		//		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 		// TODO: will need another way (non-oshi or jhardware) - not a priority right now
 		//		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 
-		// Create a StringBuffer to hold the name of the device so that it can be referenced by HBVerticle
 		int devCount = 0;
 		// TODO: Not a string buffer. Need to use the Vertx Buffer object:
 		LocalMap<String, Buffer> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
@@ -135,8 +134,11 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					// Publish device name
 					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(devCount);
 					// TODO: put this device name into the deviceMap...
-//					deviceNameBuffer.append(phidgetIKITName)
-//					.append(',');
+					//					deviceNameBuffer.append(phidgetIKITName)
+					//					.append(',');
+					Buffer phidgetBuffer = null;
+					phidgetBuffer.appendString(phidgetIKITName);
+					deviceMap.put("devices", phidgetBuffer);
 
 					// Deploy PhidgetIKitVerticle
 					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
@@ -149,11 +151,10 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				}
 
 				//	Add devices to the "available resources map"...
-				
+
 				// TODO: As I noted in OneNote, this should be communication via a local map, not the event bus.
 				// If it is on the event bus, everyone can get it!
-				
-//				vertx.eventBus().publish(KernelChannels.KERNEL, deviceNameBuffer);
+
 			}
 		} 
 	}

@@ -18,7 +18,9 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 	private final Map<Integer, String> digitalIn;
 	private final Map<Integer, String> digitalOut;
 	// TODO: These will become shared data maps...
-	public Map<String, Float> sensorData;
+//	public Map<String, Float> PhidgetInterfactKit0.ain;
+//	public Map<String, Boolean> PhidgetInterfactKit0.din;
+//	public Map<String, Float> PhidgetInterfactKit0.dou;
 	private InterfaceKitPhidget ikit;
 
 	public PhidgetInterfaceKitVerticle(String n, Map<Integer, String> aIn, Map<Integer, String> dIn, Map<Integer, String> dOut){
@@ -26,7 +28,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		analogIn = aIn;
 		digitalIn = dIn;
 		digitalOut = dOut;
-		sensorData = null;
+//		sensorData = null;
 	}
 
 
@@ -74,7 +76,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 			// We will deal with this later...for now just store the raw value.
 			float data = ikit.getSensorValue(i);
 			String sensorType = analogIn.get(new Integer(i));
-			sensorData.put(sensorType + '.' + Integer.toString(i), data);
+//			sensorData.put(sensorType + '.' + Integer.toString(i), data);
 
 		}
 		
@@ -90,7 +92,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 
 		}
 		
-		return sensorData;
+//		return sensorData;
 
 
 	}
