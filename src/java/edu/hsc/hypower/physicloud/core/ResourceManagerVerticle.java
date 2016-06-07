@@ -4,9 +4,11 @@ import edu.hsc.hypower.physicloud.KernelChannels;
 
 import edu.hsc.hypower.physicloud.KernelMapNames;
 import edu.hsc.hypower.physicloud.hw.PhidgetInterfaceKitVerticle;
+import edu.hsc.hypower.physicloud.hw.PhidgetNames;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
 
 import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -40,11 +42,10 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
 public class ResourceManagerVerticle extends AbstractVerticle {
 
 	private final JsonNode rootNode;
-	private static final String PHIDGET_IKIT = "PhidgetIKit";
-	private static final String PHIDGET_GPS = "PhidgetGPS";
+
 	private final long updatePeriod;
 
-	private LocalMap<String,Object> resourceMap;
+//	private LocalMap<String,Object> resourceMap;
 
 	public ResourceManagerVerticle(long up, JsonNode node){
 		updatePeriod = up;
@@ -55,18 +56,17 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 
-		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
+//		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 		// TODO: will need another way (non-oshi or jhardware) - not a priority right now
 		//		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 
-
 		// Create a StringBuffer to hold the name of the device so that it can be referenced by HBVerticle
 		int devCount = 0;
-		StringBuffer deviceNameBuffer = new StringBuffer();		
-
+		// TODO: Not a string buffer. Need to use the Vertx Buffer object:
+		LocalMap<String, Buffer> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
+		// Now, you append to this map for each device you detect...
 
 		//	START PARSING
-
 		Iterator<String> it = rootNode.fieldNames();
 		while(it.hasNext())
 		{
@@ -79,7 +79,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 				//	IKIT SECTION. CREATE THREE MAPS
 
-				if(devName.equals(PHIDGET_IKIT))
+				if(devName.equals(PhidgetNames.PHIDGET_IKIT))
 				{
 					devCount++;
 					String delims = ".";
@@ -100,7 +100,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 						String[] inputTypes = ioKey.split("[.]");
 						String part1 = inputTypes[0];
 
-						if(part1.equals("ain"))
+						if(part1.equals(PhidgetNames.AIN))
 						{
 							String sensorType = tempNode.get(ioKey).asText();
 							Integer locNum = Integer.parseInt(ioKey.substring(4,5));
@@ -111,7 +111,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 						//	DIGITAL INPUT
 
-						if(part1.equals("din"))
+						if(part1.equals(PhidgetNames.DIN))
 						{
 							String sensorType = tempNode.get(ioKey).asText();
 							Integer locNum = Integer.parseInt(ioKey.substring(4,5));
@@ -122,7 +122,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 						//	DIGITAL OUTPUT
 
-						if(part1.equals("dou"))
+						if(part1.equals(PhidgetNames.DOU))
 						{
 							String sensorType = tempNode.get(ioKey).asText();
 							Integer locNum = Integer.parseInt(ioKey.substring(4,5));
@@ -133,7 +133,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 
 					// Publish device name
-					String phidgetIKITName = PHIDGET_IKIT + Integer.toString(devCount);
+					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(devCount);
+					// TODO: put this device name into the deviceMap...
 //					deviceNameBuffer.append(phidgetIKITName)
 //					.append(',');
 
@@ -142,14 +143,17 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 							new DeploymentOptions().setWorker(true));
 				}
 
-				if(devName == PHIDGET_GPS)
+				if(devName.equals(PhidgetNames.PHIDGET_GPS))
 				{
 					// specify for phidget gps
 				}
 
-				//	Publish buffer with all device names to be parsed by HeartBeatVerticle
-
-				vertx.eventBus().publish(KernelChannels.KERNEL, deviceNameBuffer);
+				//	Add devices to the "available resources map"...
+				
+				// TODO: As I noted in OneNote, this should be communication via a local map, not the event bus.
+				// If it is on the event bus, everyone can get it!
+				
+//				vertx.eventBus().publish(KernelChannels.KERNEL, deviceNameBuffer);
 			}
 		} 
 	}
