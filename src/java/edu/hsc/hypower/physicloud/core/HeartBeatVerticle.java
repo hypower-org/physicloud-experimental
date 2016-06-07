@@ -89,12 +89,20 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		JsonObject hbInfo = new JsonObject();
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
 		
+		// TODO: You are not consuming from the kernel. It is simpler: on the hearbeat, read the LocalMap
+		// that manages the devices. See evernote.
 		vertx.eventBus().consumer(KernelChannels.KERNEL, new Handler<Message<StringBuffer>>(){
 			
 			//An ArrayList, a LocalMap of shared data, and an array of strings were created
 			//to allow for the storage and parsing of the receieved information
 			ArrayList<String> sensorArray = new ArrayList<String>();
+			
+			//TODO: No, we do not want a local map with the same name as the KERNEL channel.
+			// Map names are in the KernelMapNames class.
 			LocalMap<String, Map<String,Float>> deviceMap = vertx.sharedData().getLocalMap(KernelChannels.KERNEL);
+			// TODO: You want to read the AVAIALABLE_DEVICES map keys and then extract the key for
+			// EACH sensor found in their map. Publish as a JsonMessage.
+			
 			String[] parseHolder;
 			
 			@Override
