@@ -50,8 +50,8 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		vertx.setPeriodic(hbPeriod, this::handleHeartbeat);
 
 		vertx.setPeriodic(2000, this::timeoutChecker);
-		
-//		vertx.setPeriodic(5000, this::removalChecker);
+
+		//		vertx.setPeriodic(5000, this::removalChecker);
 
 		vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
 
@@ -74,9 +74,9 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				}
 			}
 		});
-		
-		
-		
+
+
+
 
 	}
 
@@ -85,35 +85,41 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	 * @param timerEvent
 	 */
 	private final void handleHeartbeat(Long timerEvent){
-		
+
 		//Creates the initial JSON and places the IP address into the file
 		JsonObject hbInfo = new JsonObject();
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
-			
-		ArrayList<String> sensorArray = new ArrayList<String>();	
-		String[] parseHolder;
-			
-		//Store the receieved buffer and convert it to a string
-		String buff = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES)
-					  .get("devices").toString();
-				
+
+		//Store the received buffer and convert it to a string
+		// TODO: Following the example on Vertx.io documentation page...
+		LocalMap<String, Buffer> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
+		// Perform a defensive copy...
+		Buffer deviceNames = deviceMap.get("devices").copy();
+
+		// TODO: You do not need this code here >>>
 		//Split into device names and store in array
-		String delims = "[,]+";
-		while(!buff.isEmpty()){
-			parseHolder = buff.split(delims);
-		}	
-				
+		//		String delims = "[,]+";
+		//		while(!buff.isEmpty()){
+		//			parseHolder = buff.split(delims);
+		//		}	
+		// <<<
+
 		//Store list of sensors in array and place proper information into JSON
-		for(int i = 0; i < parseHolder.length; i++){
-			sensorArray.clear();
-			for(String key : vertx.sharedData().getLocalMap(parseHolder[i]).keySet()){ //This is giving an error 
-				sensorArray.add(key);
-				}
-			hbInfo.put(parseHolder[i], sensorArray);
-			}
-				
+
+		// TODO: Now, you have a buffer of strings (deviceNames). 
+		// For each element in the Buffer, perform your analysis below to build up the JsonObject message for the HB.
+		// Follow my guidance in Evernote.
+
+//		for(int i = 0; i < parseHolder.length; i++){
+//			sensorArray.clear();
+//			for(String key : vertx.sharedData().getLocalMap(parseHolder[i]).keySet()){ //This is giving an error 
+//				sensorArray.add(key);
+//			}
+//			hbInfo.put(parseHolder[i], sensorArray);
+//		}
+
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
-//		System.out.println("Heartbeat sent...");
+		//		System.out.println("Heartbeat sent...");
 	}
 
 	@Override
@@ -138,14 +144,14 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		}
 
 	}
-	
-//	private final void removalChecker(Long timerEvent){
-//		LocalMap<String,NeighborData> rMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-//		
-//		for(String key: rMap.keySet()){
-//			System.out.println(key + " " + rMap.get(key));
-//		}
-//		
-//	}
+
+	//	private final void removalChecker(Long timerEvent){
+	//		LocalMap<String,NeighborData> rMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+	//		
+	//		for(String key: rMap.keySet()){
+	//			System.out.println(key + " " + rMap.get(key));
+	//		}
+	//		
+	//	}
 
 }

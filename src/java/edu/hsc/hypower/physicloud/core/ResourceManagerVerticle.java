@@ -56,8 +56,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 
-		//		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 		// TODO: will need another way (non-oshi or jhardware) - not a priority right now
+		//		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 		//		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 
 		int devCount = 0;
@@ -133,12 +133,10 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 					// Publish device name
 					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(devCount);
-					// TODO: put this device name into the deviceMap...
-					//					deviceNameBuffer.append(phidgetIKITName)
-					//					.append(',');
-					Buffer phidgetBuffer = null;
-					phidgetBuffer.appendString(phidgetIKITName);
-					deviceMap.put("devices", phidgetBuffer);
+//					Buffer phidgetBuffer = null;
+//					phidgetBuffer.appendString(phidgetIKITName);
+					// TODO: Following the Vertx example online for shared data with Buffers:
+					deviceMap.put("devices", Buffer.buffer().appendString(phidgetIKITName));
 
 					// Deploy PhidgetIKitVerticle
 					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
@@ -149,12 +147,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				{
 					// specify for phidget gps
 				}
-
-				//	Add devices to the "available resources map"...
-
-				// TODO: As I noted in OneNote, this should be communication via a local map, not the event bus.
-				// If it is on the event bus, everyone can get it!
-
 			}
 		} 
 	}
