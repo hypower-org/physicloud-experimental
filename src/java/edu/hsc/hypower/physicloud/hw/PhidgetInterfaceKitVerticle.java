@@ -40,6 +40,9 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 			ikit.openAny();
 			//	Create AttachListener Function instead of using waitForAttachment()
 			//	Not sure if that would block the event loop but I do not want to find out
+			// TODO: good point but we will need to error handle this. I added a handler to the deployment.
+			// Eventually we want this verticle to throw an exception or signal vertx that it failed.
+			// We should probably spawn waitForAttachment() with the executeBlocking API in vertx.
 			ikit.addAttachListener(new AttachListener() {
 				public void attached(AttachEvent ae)	{
 					System.out.println("A new Phidget IKIT has been attached.");

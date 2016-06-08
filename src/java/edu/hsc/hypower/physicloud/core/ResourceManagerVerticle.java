@@ -133,14 +133,25 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 					// Publish device name
 					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(devCount);
-//					Buffer phidgetBuffer = null;
-//					phidgetBuffer.appendString(phidgetIKITName);
+					//					Buffer phidgetBuffer = null;
+					//					phidgetBuffer.appendString(phidgetIKITName);
 					// TODO: Following the Vertx example online for shared data with Buffers:
 					deviceMap.put("devices", Buffer.buffer().appendString(phidgetIKITName));
 
 					// Deploy PhidgetIKitVerticle
 					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
-							new DeploymentOptions().setWorker(true));
+							new DeploymentOptions().setWorker(true),
+							new Handler<AsyncResult<String>>(){
+								@Override
+								public void handle(AsyncResult<String> res) {
+									if(!res.succeeded()){
+										System.err.println("Error deploying PhidgetInterfaceKitVerticle! TODO: Handle this issue.");
+									}
+									else{
+										System.out.println("PhidgetInterfaceKitVerticle deployed: " + res.result());
+									}
+								}
+					});
 				}
 
 				if(devName.equals(PhidgetNames.PHIDGET_GPS))
