@@ -63,19 +63,18 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		// by the vertx.sharedData() process. See how the HBVerticle does it.
 		// Repeat for making a dinDataMap...but it is String to Boolean.
 		LocalMap<String, Float> ainDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.AIN);
-		// The above line just made the LocalMap called "PhidgetIKitX.ain" where X is the number of the device.
-		
+		LocalMap<String, Boolean> dinDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.DIN);
+//		LocalMap<String, Boolean> douDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.DIN);
+				
 		// TODO: As long as the keySet for each sub-device exists (not empty), then you place the data into a map
 		// with the name:
 		// name + "." + sub-device name -- see my new PhidgetNames class that holds the AIN, DIN, DOU.
 		// Then the HBVerticle will 
 		
-		//	Update Analog In Sensors
 		for(int i = 0; i < analogIn.keySet().size(); i++)	{
 			
 			
 			
-			// TODO: This is fine for now. We will need to have the conversion factors in here for each type of sensor.
 			// We will deal with this later...for now just store the raw value.
 			float data = ikit.getSensorValue(i);
 			String sensorType = analogIn.get(new Integer(i));
@@ -85,17 +84,14 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		
 		//	Update Digital In Sensors
 		
-		// TODO: We need a separate map for digital in's and out's. Should we make two separate maps, or should we try to make sensorData a template map?
 		
 		for(int i = 0; i < digitalIn.keySet().size(); i++)	{
 			
 			boolean data = ikit.getInputState(i);
 			String sensorType = digitalIn.get(new Integer(i));
-//			sensorData.put(sensorType + '.' + Integer.toString(i), data);
 
 		}
 		
-//		return sensorData;
 
 
 	}
@@ -105,7 +101,6 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 
 	@Override
 	public void stop() throws Exception {
-		// TODO Auto-generated method stub
 		super.stop();
 	}
 

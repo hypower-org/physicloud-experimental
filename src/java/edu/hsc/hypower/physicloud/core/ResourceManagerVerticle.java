@@ -60,8 +60,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		//		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 		//		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 
-		int devCount = 0;
-		LocalMap<String, Buffer> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
+		Integer devCount = new Integer(0);
+		LocalMap<Integer, Buffer> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
 
 		//	START PARSING
 		Iterator<String> it = rootNode.fieldNames();
@@ -131,18 +131,16 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 					// Publish device name
 					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(devCount);
-<<<<<<< HEAD
 					
 					// TODO: put this device name into the deviceMap...
 					Buffer phidgetBuffer = null;
 					phidgetBuffer.appendString(phidgetIKITName);
-					deviceMap.put("devices", phidgetBuffer);
-=======
+//					deviceMap.put("devices", phidgetBuffer);
 					//					Buffer phidgetBuffer = null;
 					//					phidgetBuffer.appendString(phidgetIKITName);
 					// TODO: Following the Vertx example online for shared data with Buffers:
-					deviceMap.put("devices", Buffer.buffer().appendString(phidgetIKITName));
->>>>>>> 74803bdce6a7cf0f51fcd225afd2b3bb2efa0e34
+					deviceMap.put(devCount, Buffer.buffer().appendString(phidgetIKITName));
+
 
 					// Deploy PhidgetIKitVerticle
 					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
