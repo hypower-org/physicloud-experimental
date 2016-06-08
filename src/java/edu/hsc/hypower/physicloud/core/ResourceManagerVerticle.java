@@ -61,9 +61,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		//		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 
 		int devCount = 0;
-		// TODO: Not a string buffer. Need to use the Vertx Buffer object:
 		LocalMap<String, Buffer> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
-		// Now, you append to this map for each device you detect...
 
 		//	START PARSING
 		Iterator<String> it = rootNode.fieldNames();
@@ -133,9 +131,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 					// Publish device name
 					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(devCount);
+					
 					// TODO: put this device name into the deviceMap...
-					//					deviceNameBuffer.append(phidgetIKITName)
-					//					.append(',');
 					Buffer phidgetBuffer = null;
 					phidgetBuffer.appendString(phidgetIKITName);
 					deviceMap.put("devices", phidgetBuffer);
@@ -151,6 +148,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				}
 
 				//	Add devices to the "available resources map"...
+				
 
 				// TODO: As I noted in OneNote, this should be communication via a local map, not the event bus.
 				// If it is on the event bus, everyone can get it!
