@@ -5,26 +5,25 @@ import java.util.Map;
 import com.phidgets.*;
 import com.phidgets.event.AttachEvent;
 import com.phidgets.event.AttachListener;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import edu.hsc.hypower.physicloud.KernelChannels;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
+import io.vertx.core.shareddata.LocalMap;
 
 public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 
-	private final String name;
+	private final String verticleName;
 	private final Map<Integer, String> analogIn;
 	private final Map<Integer, String> digitalIn;
 	private final Map<Integer, String> digitalOut;
-	// TODO: These will become shared data maps...
-//	public Map<String, Float> PhidgetInterfactKit0.ain;
-//	public Map<String, Boolean> PhidgetInterfactKit0.din;
-//	public Map<String, Float> PhidgetInterfactKit0.dou;
 	private InterfaceKitPhidget ikit;
 
 	public PhidgetInterfaceKitVerticle(String n, Map<Integer, String> aIn, Map<Integer, String> dIn, Map<Integer, String> dOut){
-		name = n;
+		verticleName = n;
 		analogIn = aIn;
 		digitalIn = dIn;
 		digitalOut = dOut;
@@ -41,6 +40,9 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 			ikit.openAny();
 			//	Create AttachListener Function instead of using waitForAttachment()
 			//	Not sure if that would block the event loop but I do not want to find out
+			// TODO: good point but we will need to error handle this. I added a handler to the deployment.
+			// Eventually we want this verticle to throw an exception or signal vertx that it failed.
+			// We should probably spawn waitForAttachment() with the executeBlocking API in vertx.
 			ikit.addAttachListener(new AttachListener() {
 				public void attached(AttachEvent ae)	{
 					System.out.println("A new Phidget IKIT has been attached.");
@@ -51,19 +53,18 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 			e.printStackTrace();
 		}
 
-		// Now that device is attached, collect data here.
-		
-//		try {
-//			vertx.setPeriodic(500, this::updateSensorData);
-//		} catch (PhidgetException e) {
-//			e.printStackTrace();
-//		}
+//		vertx.setPeriodic(500, this::updateSensorData);
 		
 	}
 
+	public final void updateSensorData(Long l) throws PhidgetException	{
 
-	public final Map<String, Float> updateSensorData(Long l) throws PhidgetException	{
-
+		// TODO: The maps are built inside of this function. They will be accessed
+		// by the vertx.sharedData() process. See how the HBVerticle does it.
+		// Repeat for making a dinDataMap...but it is String to Boolean.
+		LocalMap<String, Float> ainDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.AIN);
+		// The above line just made the LocalMap called "PhidgetIKitX.ain" where X is the number of the device.
+		
 		// TODO: As long as the keySet for each sub-device exists (not empty), then you place the data into a map
 		// with the name:
 		// name + "." + sub-device name -- see my new PhidgetNames class that holds the AIN, DIN, DOU.
@@ -71,6 +72,8 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		
 		//	Update Analog In Sensors
 		for(int i = 0; i < analogIn.keySet().size(); i++)	{
+			
+			
 			
 			// TODO: This is fine for now. We will need to have the conversion factors in here for each type of sensor.
 			// We will deal with this later...for now just store the raw value.

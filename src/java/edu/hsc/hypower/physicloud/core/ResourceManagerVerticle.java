@@ -56,8 +56,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 
-		//		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 		// TODO: will need another way (non-oshi or jhardware) - not a priority right now
+		//		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 		//		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 
 		int devCount = 0;
@@ -131,15 +131,33 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 					// Publish device name
 					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(devCount);
+<<<<<<< HEAD
 					
 					// TODO: put this device name into the deviceMap...
 					Buffer phidgetBuffer = null;
 					phidgetBuffer.appendString(phidgetIKITName);
 					deviceMap.put("devices", phidgetBuffer);
+=======
+					//					Buffer phidgetBuffer = null;
+					//					phidgetBuffer.appendString(phidgetIKITName);
+					// TODO: Following the Vertx example online for shared data with Buffers:
+					deviceMap.put("devices", Buffer.buffer().appendString(phidgetIKITName));
+>>>>>>> 74803bdce6a7cf0f51fcd225afd2b3bb2efa0e34
 
 					// Deploy PhidgetIKitVerticle
 					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
-							new DeploymentOptions().setWorker(true));
+							new DeploymentOptions().setWorker(true),
+							new Handler<AsyncResult<String>>(){
+								@Override
+								public void handle(AsyncResult<String> res) {
+									if(!res.succeeded()){
+										System.err.println("Error deploying PhidgetInterfaceKitVerticle! TODO: Handle this issue.");
+									}
+									else{
+										System.out.println("PhidgetInterfaceKitVerticle deployed: " + res.result());
+									}
+								}
+					});
 				}
 
 				if(devName.equals(PhidgetNames.PHIDGET_GPS))
