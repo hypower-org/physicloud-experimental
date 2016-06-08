@@ -5,12 +5,14 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,9 +77,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 			}
 		});
 
-
-
-
 	}
 
 	/**
@@ -90,33 +89,22 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		JsonObject hbInfo = new JsonObject();
 		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
 
-		//Store the received buffer and convert it to a string
-		// TODO: Following the example on Vertx.io documentation page...
-		LocalMap<String, Buffer> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
-		// Perform a defensive copy...
-		Buffer deviceNames = deviceMap.get("devices").copy();
+		
+		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
+	
+		JsonArray sensorArray = new JsonArray();
 
-		// TODO: You do not need this code here >>>
-		//Split into device names and store in array
-		//		String delims = "[,]+";
-		//		while(!buff.isEmpty()){
-		//			parseHolder = buff.split(delims);
-		//		}	
-		// <<<
 
 		//Store list of sensors in array and place proper information into JSON
+		
 
-		// TODO: Now, you have a buffer of strings (deviceNames). 
-		// For each element in the Buffer, perform your analysis below to build up the JsonObject message for the HB.
-		// Follow my guidance in Evernote.
-
-//		for(int i = 0; i < parseHolder.length; i++){
-//			sensorArray.clear();
-//			for(String key : vertx.sharedData().getLocalMap(parseHolder[i]).keySet()){ //This is giving an error 
-//				sensorArray.add(key);
-//			}
-//			hbInfo.put(parseHolder[i], sensorArray);
-//		}
+		for(int i = 0; i < deviceMap.size(); i++){
+			sensorArray.clear();
+			for(Object key : vertx.sharedData().getLocalMap(deviceMap.get(i)).keySet()){ 
+				sensorArray.add(key);
+			}
+			hbInfo.put(deviceMap.get(i), sensorArray);
+		}
 
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
 		//		System.out.println("Heartbeat sent...");
