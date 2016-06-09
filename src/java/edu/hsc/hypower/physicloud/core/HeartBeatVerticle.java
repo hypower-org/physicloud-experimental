@@ -63,13 +63,14 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				// Need a more sophisticated neighbor data book keeping mechanism!		
 				JsonObject jsonInfo = msg.body();
 				String tempIp = jsonInfo.getString(JsonFieldNames.IP_ADDR);
+				
+				System.out.println(jsonInfo.encodePrettily());
 
 				if(tempIp != ipAddr){
 					System.out.println("Heartbeat received from " + tempIp);
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
 					neighborMap.put(tempIp, new NeighborData(tempIp));
-
 
 					// Update the last update time from this neighbor.
 					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());
@@ -96,8 +97,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 
 		//Store list of sensors in array and place proper information into JSON
-		
-
 		for(int i = 0; i < deviceMap.size(); i++){
 			sensorArray.clear();
 			for(Object key : vertx.sharedData().getLocalMap(deviceMap.get(i)).keySet()){ 

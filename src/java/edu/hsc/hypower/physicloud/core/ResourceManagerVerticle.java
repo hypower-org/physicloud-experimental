@@ -60,88 +60,88 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		//		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 		//		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 
-		Integer devCount = new Integer(0);
-		LocalMap<Integer, Buffer> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
+		int hwCount = 0;
+		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
 
 		//	START PARSING
-		Iterator<String> it = rootNode.fieldNames();
-		while(it.hasNext())
+		Iterator<String> deviceFields = rootNode.fieldNames();
+		while(deviceFields.hasNext())
 		{
-			String deviceKey = it.next();		
+			String deviceKey = deviceFields.next();		
 			if(deviceKey.indexOf('.') != -1)
 			{
-				//	TRAVERSAL IS NOW AT THE DEVICE NAME
-
-				String devName = deviceKey.substring(deviceKey.indexOf('.')+1);	
+				String deviceName = deviceKey.substring(deviceKey.indexOf('.')+1);	
 
 				//	IKIT SECTION. CREATE THREE MAPS
-
-				if(devName.equals(PhidgetNames.PHIDGET_IKIT))
+				if(deviceName.equals(PhidgetNames.PHIDGET_IKIT))
 				{
-					devCount++;
-					String delims = ".";
-					JsonNode tempNode = rootNode.get(deviceKey);
+					JsonNode deviceNode = rootNode.get(deviceKey);
 					Map<Integer, String> ikitAnIn = new HashMap<Integer, String>();
+					boolean hasAin = false;
 					Map<Integer, String> ikitDIn = new HashMap<Integer, String>();
+					boolean hasDin = false;
 					Map<Integer, String> ikitDOut = new HashMap<Integer, String>();
+					boolean hasDou = false;
 
-					Iterator<String> internalIt = tempNode.fieldNames();
+					Iterator<String> sensorFields = deviceNode.fieldNames();
 
-					while(internalIt.hasNext())
+					while(sensorFields.hasNext())
 					{
-
-						String ioKey = internalIt.next();
+						// This section of code parses the internals of the PhidgetIKit details.
+						String ioKey = sensorFields.next();
 
 						// ANALOG INPUT 
-
 						String[] inputTypes = ioKey.split("[.]");
 						String part1 = inputTypes[0];
 
 						if(part1.equals(PhidgetNames.AIN))
 						{
-							String sensorType = tempNode.get(ioKey).asText();
+							String sensorType = deviceNode.get(ioKey).asText();
 							Integer locNum = Integer.parseInt(ioKey.substring(4,5));
 							ikitAnIn.put(locNum, sensorType);
-							System.out.println(locNum + " " + sensorType);
-
+							hasAin = true;
 						}
 
 						//	DIGITAL INPUT
 
 						if(part1.equals(PhidgetNames.DIN))
 						{
-							String sensorType = tempNode.get(ioKey).asText();
+							String sensorType = deviceNode.get(ioKey).asText();
 							Integer locNum = Integer.parseInt(ioKey.substring(4,5));
-							ikitDIn.put(locNum, sensorType);	
-							System.out.println(locNum + " " + sensorType);
-
+							ikitDIn.put(locNum, sensorType);
+							hasDin = true;
 						}
 
 						//	DIGITAL OUTPUT
 
 						if(part1.equals(PhidgetNames.DOU))
 						{
-							String sensorType = tempNode.get(ioKey).asText();
+							String sensorType = deviceNode.get(ioKey).asText();
 							Integer locNum = Integer.parseInt(ioKey.substring(4,5));
 							ikitDOut.put(locNum, sensorType);
-							System.out.println(locNum + " " + sensorType);
+							hasDou = true;
 						}
 					}
 
-
-					// Publish device name
-					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(devCount);
+					// Kind of hacky here...but we are boxed in by our json format.
+					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount);
+					int deviceCount = 0; 
+					if(hasAin){
+						System.out.println("Adding AIN device.");
+						deviceMap.put(deviceCount, PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount) + "." + PhidgetNames.AIN);
+						deviceCount++;
+					}
+					if(hasDin){
+						deviceMap.put(deviceCount, PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount) + "." + PhidgetNames.DIN);
+						deviceCount++;
+					}
+					if(hasDou){
+						deviceMap.put(deviceCount, PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount) + "." + PhidgetNames.DOU);
+						deviceCount++;
+					}
 					
-					// TODO: put this device name into the deviceMap...
-					Buffer phidgetBuffer = null;
-					phidgetBuffer.appendString(phidgetIKITName);
-//					deviceMap.put("devices", phidgetBuffer);
-					//					Buffer phidgetBuffer = null;
-					//					phidgetBuffer.appendString(phidgetIKITName);
-					// TODO: Following the Vertx example online for shared data with Buffers:
-					deviceMap.put(devCount, Buffer.buffer().appendString(phidgetIKITName));
-
-
+					System.out.println(deviceMap.values());
+					
 					// Deploy PhidgetIKitVerticle
 					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
 							new DeploymentOptions().setWorker(true),
@@ -156,9 +156,11 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 									}
 								}
 					});
+					hwCount++;
+
 				}
 
-				if(devName.equals(PhidgetNames.PHIDGET_GPS))
+				if(deviceName.equals(PhidgetNames.PHIDGET_GPS))
 				{
 					// specify for phidget gps
 				}
