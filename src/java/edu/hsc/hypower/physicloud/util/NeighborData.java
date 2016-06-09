@@ -1,5 +1,8 @@
 package edu.hsc.hypower.physicloud.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import io.vertx.core.shareddata.Shareable;
 
 /**
@@ -11,22 +14,11 @@ import io.vertx.core.shareddata.Shareable;
 public final class NeighborData implements Shareable{
 
 	private final String ipAddr;
-//	private final long memAvail;
-//	private final int pCore;
-//	private final int lCore;
-//	private final double pLoad;
-
-//	public NeighborData(String ipAddr, long memAvail, int pCore, int lCore, double pLoad) {
-//		this.ipAddr = ipAddr;
-//		this.memAvail = memAvail;
-//		this.pCore = pCore;
-//		this.lCore = lCore;
-//		this.pLoad = pLoad;
-//	}
+	private final HashMap<String, ArrayList<String>> deviceData;
 	
-	public NeighborData(String ipAddr) {
+	public NeighborData(String ipAddr, HashMap<String, ArrayList<String>> deviceData) {
 		this.ipAddr = ipAddr;
-		
+		this.deviceData = deviceData;
 	}
 
 
@@ -34,20 +26,8 @@ public final class NeighborData implements Shareable{
 		return ipAddr;
 	}
 	
-//	public long memAvail()	{
-//		return memAvail;
-//	}
-//
-//	public int getpCore() {
-//		return pCore;
-//	}
-//
-//	public int getlCore() {
-//		return lCore;
-//	}
-//
-//	public double getpLoad() {
-//		return pLoad;
-//	}
-
+	public final HashMap<String, ArrayList<String>> getDeviceData() {
+		return deviceData;
+	}
+	
 }

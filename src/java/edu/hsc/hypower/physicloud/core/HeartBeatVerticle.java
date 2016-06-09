@@ -70,7 +70,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 					System.out.println("Heartbeat received from " + tempIp);
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
-					neighborMap.put(tempIp, new NeighborData(tempIp));
+					neighborMap.put(tempIp, new NeighborData(tempIp, null));
 
 					// Update the last update time from this neighbor.
 					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());

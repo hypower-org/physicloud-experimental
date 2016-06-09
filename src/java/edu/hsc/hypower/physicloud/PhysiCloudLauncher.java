@@ -38,8 +38,9 @@ public class PhysiCloudLauncher {
 		try	{
 
 			ObjectMapper mapper = new ObjectMapper();
-			String configFileName = args[0];
-			JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));
+//			String configFileName = args[0];
+			
+			JsonNode rootNode = mapper.readTree(new File("test.json"));
 
 			String nodeIp = rootNode.get("IP").asText();											// retrieve IP	
 			System.out.println("Sensor node IP Address: " + nodeIp);
