@@ -139,22 +139,22 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 						deviceMap.put(deviceCount, PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount) + "." + PhidgetNames.DOU);
 						deviceCount++;
 					}
-					
+
 					System.out.println(deviceMap.values());
-					
+
 					// Deploy PhidgetIKitVerticle
 					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
 							new DeploymentOptions().setWorker(true),
 							new Handler<AsyncResult<String>>(){
-								@Override
-								public void handle(AsyncResult<String> res) {
-									if(!res.succeeded()){
-										System.err.println("Error deploying PhidgetInterfaceKitVerticle! TODO: Handle this issue.");
-									}
-									else{
-										System.out.println("PhidgetInterfaceKitVerticle deployed: " + res.result());
-									}
-								}
+						@Override
+						public void handle(AsyncResult<String> res) {
+							if(!res.succeeded()){
+								System.err.println("Error deploying PhidgetInterfaceKitVerticle! TODO: Handle this issue.");
+							}
+							else{
+								System.out.println("PhidgetInterfaceKitVerticle deployed: " + res.result());
+							}
+						}
 					});
 					hwCount++;
 
@@ -166,7 +166,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				}
 
 				//	Add devices to the "available resources map"...
-				
+
 
 				// TODO: As I noted in OneNote, this should be communication via a local map, not the event bus.
 				// If it is on the event bus, everyone can get it!
