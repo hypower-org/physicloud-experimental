@@ -204,7 +204,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 	@Override
 	public void stop() throws Exception {
-		// TODO Auto-generated method stub
 		super.stop();
 	}
 

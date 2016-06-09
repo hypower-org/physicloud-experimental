@@ -35,8 +35,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	private final String ipAddr;
 	private final Long hbPeriod;
 
-	// Local structure to keep track of timing. If we have not heard from a neighbor in a long
-	// time (now 5 seconds) we need to do something...
 	private HashMap<String,Long> neighborUpdateTimes;
 
 	public HeartBeatVerticle(String ip, Long hbp){
