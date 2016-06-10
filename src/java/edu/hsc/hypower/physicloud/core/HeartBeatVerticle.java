@@ -3,7 +3,6 @@ package edu.hsc.hypower.physicloud.core;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -15,6 +14,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -58,18 +58,38 @@ public class HeartBeatVerticle extends AbstractVerticle {
 				// Need a more sophisticated neighbor data book keeping mechanism!		
 				JsonObject jsonInfo = msg.body();
 				String tempIp = jsonInfo.getString(JsonFieldNames.IP_ADDR);
-				
-				System.out.println(jsonInfo.encodePrettily());
 
 				if(tempIp != ipAddr){
 					System.out.println("Heartbeat received from " + tempIp);
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-
-					// TODO: Unpack the incoming JsonInfo to get the resources that are available.
-					// Put the resource into the ArrayList as a single string: devicename + "." + resource 
 					
-					// TODO: Not a good idea to pass null - at least pass an empty object...new ArrayList<String>()
-					neighborMap.put(tempIp, new NeighborData(tempIp, null));
+					jsonInfo.remove(JsonFieldNames.IP_ADDR);
+
+					//Instantiation of objects necessary for parsing JSON
+					
+					HashMap<String, ArrayList<String>> resParse = new HashMap<String,ArrayList<String>>();
+					ArrayList<String> resArr = new ArrayList<String>();
+					JsonArray sensParse = new JsonArray();
+					Set<String> jsonFields = jsonInfo.fieldNames();
+					Iterator<String> fieldIter = jsonFields.iterator();
+					String fieldHold;
+					
+					
+					//Parses the JSON
+					for(int i = 0; i < jsonInfo.size(); i++){
+						
+						fieldHold = fieldIter.next();
+						resArr.clear();
+						sensParse.clear();
+						sensParse = jsonInfo.getJsonArray(fieldHold);
+						for(int j = 0; i < sensParse.size(); j++){
+							resArr.add(fieldHold + "." + sensParse.getString(j));
+						}
+						resParse.put(fieldHold, resArr);
+	
+					}					
+					
+					neighborMap.put(tempIp, new NeighborData(tempIp, resParse));
 
 					// Update the last update time from this neighbor.
 					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());
@@ -110,7 +130,14 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	@Override
 	public void stop() throws Exception {
 		super.stop();
-	}	
+	}
+	
+	
+	
+	
+	
+	
+	
 
 	private final void timeoutChecker(Long timerEvent){
 
