@@ -127,7 +127,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount);
 					int deviceCount = 0; 
 					if(hasAin){
-						System.out.println("Adding AIN device.");
 						deviceMap.put(deviceCount, PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount) + "." + PhidgetNames.AIN);
 						deviceCount++;
 					}
@@ -140,7 +139,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 						deviceCount++;
 					}
 
-					System.out.println(deviceMap.values());
+//					System.out.println(deviceMap.values());
 
 					// Deploy PhidgetIKitVerticle
 					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
