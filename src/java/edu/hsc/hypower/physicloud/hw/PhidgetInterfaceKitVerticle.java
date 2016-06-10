@@ -30,7 +30,6 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		analogIn = aIn;
 		digitalIn = dIn;
 		digitalOut = dOut;
-		//		sensorData = null;
 	}
 
 
@@ -40,7 +39,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		try {
 			ikit = new InterfaceKitPhidget();
 			// TODO: need to handle HW attachment better!
-			long startTime = System.currentTimeMillis();
+//			long startTime = System.currentTimeMillis();
 			ikit.openAny();
 			ikit.addAttachListener(new AttachListener() {
 				public void attached(AttachEvent ae)	{
@@ -48,8 +47,8 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 				}
 			});
 			ikit.waitForAttachment();
-			long endTime   = System.currentTimeMillis();
-			System.out.println(endTime - startTime);
+//			long endTime   = System.currentTimeMillis();
+//			System.out.println(endTime - startTime);
 
 		} catch (PhidgetException e) {
 			e.printStackTrace();
@@ -68,8 +67,6 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		// TODO: As long as the keySet for each sub-device exists (not empty), then you place the data into a map
 		// with the name:
 		// name + "." + sub-device name -- see my new PhidgetNames class that holds the AIN, DIN, DOU.
-		// Then the HBVerticle will 
-
 		for(int i = 0; i < analogIn.keySet().size(); i++)	{
 
 			// We will deal with this later...for now just store the raw value.
@@ -77,9 +74,8 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 			try {
 				data = ikit.getSensorValue(i);
 				String sensorType = analogIn.get(new Integer(i));
-				//				sensorData.put(sensorType + '.' + Integer.toString(i), data);
 				ainDataMap.put(sensorType + "." + Integer.toString(i), data);
-				System.out.println(sensorType + "." + Integer.toString(i) + " : " + data);
+//				System.out.println(sensorType + "." + Integer.toString(i) + " : " + data);
 			} catch (PhidgetException pe) {
 				pe.printStackTrace();
 			}
@@ -92,6 +88,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		for(int i = 0; i < digitalIn.keySet().size(); i++)	{
 
 			try {
+				// TODO: implement the same this as the AIN functionality.
 				boolean data = ikit.getInputState(i);
 				String sensorType = digitalIn.get(new Integer(i));
 			} catch (PhidgetException pe) {

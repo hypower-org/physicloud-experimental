@@ -51,10 +51,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 		vertx.setPeriodic(2000, this::timeoutChecker);
 
-		//		vertx.setPeriodic(5000, this::removalChecker);
-
 		vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
-
 			@Override
 			public void handle(Message<JsonObject> msg) {											
 
@@ -68,6 +65,10 @@ public class HeartBeatVerticle extends AbstractVerticle {
 					System.out.println("Heartbeat received from " + tempIp);
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
+					// TODO: Unpack the incoming JsonInfo to get the resources that are available.
+					// Put the resource into the ArrayList as a single string: devicename + "." + resource 
+					
+					// TODO: Not a good idea to pass null - at least pass an empty object...new ArrayList<String>()
 					neighborMap.put(tempIp, new NeighborData(tempIp, null));
 
 					// Update the last update time from this neighbor.
@@ -104,7 +105,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		}
 
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
-		//		System.out.println("Heartbeat sent...");
 	}
 
 	@Override
@@ -129,14 +129,5 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		}
 
 	}
-
-	//	private final void removalChecker(Long timerEvent){
-	//		LocalMap<String,NeighborData> rMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-	//		
-	//		for(String key: rMap.keySet()){
-	//			System.out.println(key + " " + rMap.get(key));
-	//		}
-	//		
-	//	}
 
 }

@@ -165,16 +165,9 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					// specify for phidget gps
 				}
 
-				//	Add devices to the "available resources map"...
-
-
-				// TODO: As I noted in OneNote, this should be communication via a local map, not the event bus.
-				// If it is on the event bus, everyone can get it!
-
 			}
 		} 
 	}
-
 
 	private final void handleRequest(Message<JsonObject> msg){
 

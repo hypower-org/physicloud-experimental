@@ -38,9 +38,11 @@ public class PhysiCloudLauncher {
 		try	{
 
 			ObjectMapper mapper = new ObjectMapper();
-//			String configFileName = args[0];
+			// TODO: The PCLauncher now accepts a string name for the json file.
+			// It is passed as a parameter on the command line.
+			String configFileName = args[0];
 			
-			JsonNode rootNode = mapper.readTree(new File("test.json"));
+			JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));
 
 			String nodeIp = rootNode.get("IP").asText();											// retrieve IP	
 			System.out.println("Sensor node IP Address: " + nodeIp);
