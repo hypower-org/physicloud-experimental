@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hazelcast.config.Config;
 
 import edu.hsc.hypower.physicloud.core.HeartBeatVerticle;
 import edu.hsc.hypower.physicloud.core.RequestHandlerVerticle;
@@ -24,6 +25,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
  * The new PhysiCloud launching class.
@@ -56,10 +58,16 @@ public class PhysiCloudLauncher {
 			long heartBeatPeriod = rootNode.get("heartBeatPeriod").asLong();						// retrieve heart beat period
 			System.out.println("Sensor node heart beat period: " + heartBeatPeriod);
 
-			HashMap<String, ArrayList<String>> deviceMap = new HashMap<String, ArrayList<String>>(); 
-
+			// Set up hazelcast correctly
+			Config clusterConfig = new Config();
+			clusterConfig.getNetworkConfig().setPort(5000);
+			clusterConfig.getNetworkConfig().setPortAutoIncrement(true);
+			clusterConfig.getNetworkConfig().getInterfaces().setEnabled(true).addInterface(nodeIp);
+			ClusterManager mgr = new HazelcastClusterManager(clusterConfig);
+			
 			VertxOptions opts = new VertxOptions()
 					.setWorkerPoolSize(Runtime.getRuntime().availableProcessors())
+					.setClusterManager(mgr)
 					.setClusterHost(nodeIp);
 
 			Handler<AsyncResult<Vertx>> resultHandler = new Handler<AsyncResult<Vertx>>(){
@@ -91,6 +99,7 @@ public class PhysiCloudLauncher {
 								}
 							}
 						});
+						
 					}
 				}
 			};

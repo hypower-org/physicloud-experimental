@@ -56,40 +56,30 @@ public class HeartBeatVerticle extends AbstractVerticle {
 			public void handle(Message<JsonObject> msg) {											
 
 				// Need a more sophisticated neighbor data book keeping mechanism!		
-				JsonObject jsonInfo = msg.body();
-				String tempIp = jsonInfo.getString(JsonFieldNames.IP_ADDR);
+				JsonObject hbJsonMsg = msg.body();
+				String tempIp = hbJsonMsg.getString(JsonFieldNames.IP_ADDR);
 
 				if(tempIp != ipAddr){
 					System.out.println("Heartbeat received from " + tempIp);
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 					
-					jsonInfo.remove(JsonFieldNames.IP_ADDR);
+					System.out.println(hbJsonMsg.encodePrettily());
 
 					//Instantiation of objects necessary for parsing JSON
-					
-					HashMap<String, ArrayList<String>> resParse = new HashMap<String,ArrayList<String>>();
-					ArrayList<String> resArr = new ArrayList<String>();
-					JsonArray sensParse = new JsonArray();
-					Set<String> jsonFields = jsonInfo.fieldNames();
-					Iterator<String> fieldIter = jsonFields.iterator();
-					String fieldHold;
-					
-					
-					//Parses the JSON
-					for(int i = 0; i < jsonInfo.size(); i++){
-						
-						fieldHold = fieldIter.next();
-						resArr.clear();
-						sensParse.clear();
-						sensParse = jsonInfo.getJsonArray(fieldHold);
-						for(int j = 0; i < sensParse.size(); j++){
-							resArr.add(fieldHold + "." + sensParse.getString(j));
+					HashMap<String, ArrayList<String>> neighborResourceMap = new HashMap<String,ArrayList<String>>();
+					for(String s : hbJsonMsg.fieldNames()){
+						// If it is not the IP, it will be a resource array
+						if(s.compareTo(JsonFieldNames.IP_ADDR) != 0){
+							ArrayList<String> resourceNames = new ArrayList<>();
+							JsonArray resourceArr = hbJsonMsg.getJsonArray(s);
+							for(int i = 0; i < resourceArr.size(); i++){
+								resourceNames.add(resourceArr.getString(i));
+							}
+							neighborResourceMap.put(s, resourceNames);
 						}
-						resParse.put(fieldHold, resArr);
-	
-					}					
-					
-					neighborMap.put(tempIp, new NeighborData(tempIp, resParse));
+					}
+//					System.out.println(neighborResourceMap);
+					neighborMap.put(tempIp, new NeighborData(tempIp, neighborResourceMap));
 
 					// Update the last update time from this neighbor.
 					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());
@@ -123,7 +113,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 			}
 			hbInfo.put(deviceMap.get(i), sensorArray);
 		}
-
+		System.out.println(ipAddr + " alive.");
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
 	}
 
