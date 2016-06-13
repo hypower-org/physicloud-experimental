@@ -78,7 +78,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 							neighborResourceMap.put(s, resourceNames);
 						}
 					}
-//					System.out.println(neighborResourceMap);
+					System.out.println(neighborMap);
 					neighborMap.put(tempIp, new NeighborData(tempIp, neighborResourceMap));
 
 					// Update the last update time from this neighbor.
@@ -108,12 +108,18 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		//Store list of sensors in array and place proper information into JSON
 		for(int i = 0; i < deviceMap.size(); i++){
 			sensorArray.clear();
-			for(Object key : vertx.sharedData().getLocalMap(deviceMap.get(i)).keySet()){ 
+			for(Object key : vertx.sharedData().getLocalMap(deviceMap.get(i)).keySet()){
+				System.out.println(key);
 				sensorArray.add(key);
+				
 			}
+			
 			hbInfo.put(deviceMap.get(i), sensorArray);
 		}
+		
+		
 		System.out.println(ipAddr + " alive.");
+		
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
 	}
 

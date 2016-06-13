@@ -1,6 +1,7 @@
 package edu.hsc.hypower.physicloud.core;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -34,19 +35,38 @@ public class RequestTestVerticle extends AbstractVerticle {
 	}
 
 	private final void sendRequestMessage(Long timerEvent){
-
-		//Create a Json to hold the values of the IP Address and the requested resource
-		JsonObject jsonRequest = new JsonObject();
-
-		jsonRequest.put(JsonFieldNames.IP_ADDR, "1.1.1.0");
-		jsonRequest.put("Requested Value", JsonFieldNames.P_CORES);
-
-		// Send the message here!
-		vertx.eventBus().publish(KernelChannels.READ_REQUEST, jsonRequest);
-
-
-		//		JsonFieldNames.IP_ADDR) + "." + 
-		System.out.println("Reqest Sent");
+		
+		//JsonObject for request
+		JsonObject reqMsg = new JsonObject();
+	
+		//Local copy of NeighborData
+		LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+		
+	
+		String[] ipSet = (String[]) neighborMap.keySet().toArray();
+		
+		reqMsg.put("Requested Resource", "temperature.0");
+		
+		for(int i = 0; i < ipSet.length; i++){
+			
+			//TODO- ADD REPLY HANDLER
+			vertx.eventBus().send(ipSet[i] + ".KernelChannels.HEARTBEAT", reqMsg, new Handler<AsyncResult<Message<JsonObject>>>());
+			
+			// TODO-RECEIVE REPLY HERE
+			JsonObject resultReply = reply.result().body();
+			
+			//Output result from reply
+			if(reply.succeeded()){		
+			
+				if(resultReply.getBoolean("Is Available")){
+					System.out.println("Resource is Available");
+				}
+				else{
+					System.out.println("Resource not Available");
+				}
+			}
+		}
+		
 
 
 	}
