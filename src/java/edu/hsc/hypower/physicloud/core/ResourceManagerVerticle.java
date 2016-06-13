@@ -160,7 +160,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 			}
 		}
-		
+
 		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.READ_REQUEST, this::handleRequest);
 	}
 
@@ -170,26 +170,38 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		JsonObject request = msg.body();
 
 		//TODO: Use the defined resource request message to search for and reply about resource.
-		
+
 		System.out.println("Request Receieved");
 
 		//Store Ip Address of CPU
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
-		String reqInfo = request.getString("Requested Value");
+		String reqInfo = request.getString("Requested Value");		
+		LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+		NeighborData reqNeighborData = neighborMap.get(ipAddr);
 
-		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
-
-
-		//Create JSON to store IP address and requested resource
-
-		JsonObject infoReply = new JsonObject();
+		//Now what? reqNeighborData is of type 
 
 
-		msg.reply(infoReply);
-		//This output statement is only valid for the test case of memory being the requested resource
-		//We need to figure out a way to output various data types
-		System.out.println("Value of Requested Resource: " + infoReply.getLong("Requested Value"));
-		System.out.println("Reply Sent!");
+		// Check if the resource is available? 
+
+		if(reqNeighborData != null){	
+
+
+			JsonObject infoReply = new JsonObject();		
+
+			System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
+
+
+			//Create JSON to store IP address and requested resource
+
+			msg.reply(infoReply);
+
+			//This output statement is only valid for the test case of memory being the requested resource
+			//We need to figure out a way to output various data types
+			System.out.println("Value of Requested Resource: " + infoReply.getLong("Requested Value"));
+			System.out.println("Reply Sent!");
+
+		}
 
 	}
 
