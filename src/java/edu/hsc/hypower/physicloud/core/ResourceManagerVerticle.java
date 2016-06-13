@@ -179,11 +179,10 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 		NeighborData reqNeighborData = neighborMap.get(ipAddr);
 
-
 		// Check if the resource is available
 		// If it is, insert boolean true into JSON 
 
-		if(reqNeighborData != null){	
+		if(reqNeighborData != null && !reqNeighborData.toString().equals("")){	
 
 
 			JsonObject infoReply = new JsonObject();		
