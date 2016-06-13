@@ -28,13 +28,6 @@ public class RequestTestVerticle extends AbstractVerticle {
 
 		System.out.println("Requests have started");
 
-		// TODO: We are not doing write requests yet. Do not need.
-		//vertx.eventBus().consumer(KernelChannels.WRITE_REQUEST, handler) 
-
-		// TODO: All this verticle should do is start a periodic function that sends a message to
-		// the READ_REQUEST channel.
-
-		// Here is a start...set a periodic task that sends a request every second (1000 ms).
 		vertx.setPeriodic(1000, this::sendRequestMessage);
 
 
