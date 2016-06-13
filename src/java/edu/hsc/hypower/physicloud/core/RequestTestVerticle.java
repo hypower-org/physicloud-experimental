@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,17 +44,16 @@ public class RequestTestVerticle extends AbstractVerticle {
 		LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 		
 	
-		String[] ipSet = (String[]) neighborMap.keySet().toArray();
+		Set<String> ipSet = neighborMap.keySet();
 		
 		reqMsg.put("Requested Resource", "temperature.0");
 		
-		for(int i = 0; i < ipSet.length; i++){
+		for(String s : ipSet){
 			
 			//TODO- ADD REPLY HANDLER
-			vertx.eventBus().send(ipSet[i] + ".KernelChannels.HEARTBEAT", reqMsg, new Handler<AsyncResult<Message<JsonObject>>>());
+			vertx.eventBus().send(s + ".KernelChannels.HEARTBEAT", reqMsg, reply -> {
 			
-			// TODO-RECEIVE REPLY HERE
-			JsonObject resultReply = reply.result().body();
+			JsonObject resultReply =  reply.result().body();
 			
 			//Output result from reply
 			if(reply.succeeded()){		
@@ -65,6 +65,8 @@ public class RequestTestVerticle extends AbstractVerticle {
 					System.out.println("Resource not Available");
 				}
 			}
+		});
+			
 		}
 		
 

@@ -100,6 +100,16 @@ public class PhysiCloudLauncher {
 							}
 						});
 						
+						vertx.deployVerticle(new RequestTestVerticle(),
+						new Handler<AsyncResult<String>>(){
+							@Override
+							public void handle(AsyncResult<String> res) {
+								if(res.succeeded()){
+									System.out.println("Deployed ResourceManagerVerticle!");
+								}
+							}
+						});
+						
 					}
 				}
 			};
