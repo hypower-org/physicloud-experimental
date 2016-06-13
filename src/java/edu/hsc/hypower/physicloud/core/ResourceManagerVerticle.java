@@ -44,10 +44,10 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	private final JsonNode rootNode;
 
 	private final long updatePeriod;
+	private final String ipAddress;
 
-	//	private LocalMap<String,Object> resourceMap;
-
-	public ResourceManagerVerticle(long up, JsonNode node){
+	public ResourceManagerVerticle(String ipAddr, long up, JsonNode node){
+		ipAddress = ipAddr;
 		updatePeriod = up;
 		rootNode = node;
 	}
@@ -55,10 +55,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	@Override
 	public void start() throws Exception {
 		super.start();
-
-		// TODO: will need another way (non-oshi or jhardware) - not a priority right now
-		//		resourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
-		//		vertx.setPeriodic(updatePeriod, ResourceManagerVerticle::updateCyberResources);
 
 		int hwCount = 0;
 		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
@@ -139,8 +135,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 						deviceCount++;
 					}
 
-//					System.out.println(deviceMap.values());
-
 					// Deploy PhidgetIKitVerticle
 					vertx.deployVerticle(new PhidgetInterfaceKitVerticle(phidgetIKITName, ikitAnIn, ikitDIn, ikitDOut), 
 							new DeploymentOptions().setWorker(true),
@@ -165,13 +159,18 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				}
 
 			}
-		} 
+		}
+		
+		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.READ_REQUEST, this::handleRequest);
 	}
 
+	// TODO: flesh out this functionality!
 	private final void handleRequest(Message<JsonObject> msg){
 
 		JsonObject request = msg.body();
 
+		//TODO: Use the defined resource request message to search for and reply about resource.
+		
 		System.out.println("Request Receieved");
 
 		//Store Ip Address of CPU
