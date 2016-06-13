@@ -179,10 +179,9 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 		NeighborData reqNeighborData = neighborMap.get(ipAddr);
 
-		//Now what? reqNeighborData is of type 
 
-
-		// Check if the resource is available? 
+		// Check if the resource is available
+		// If it is, insert boolean true into JSON 
 
 		if(reqNeighborData != null){	
 
@@ -191,7 +190,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 			System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
 
-
+			infoReply.put("Is Available", true);
 			//Create JSON to store IP address and requested resource
 
 			msg.reply(infoReply);
@@ -199,6 +198,16 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			//This output statement is only valid for the test case of memory being the requested resource
 			//We need to figure out a way to output various data types
 			System.out.println("Value of Requested Resource: " + infoReply.getLong("Requested Value"));
+			System.out.println("Reply Sent!");
+
+		}
+
+		else	{
+
+			JsonObject infoReply = new JsonObject();
+			System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
+			infoReply.put("Is Available", false);
+			msg.reply(infoReply);
 			System.out.println("Reply Sent!");
 
 		}
