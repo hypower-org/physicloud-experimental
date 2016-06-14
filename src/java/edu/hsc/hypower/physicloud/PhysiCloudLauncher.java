@@ -105,7 +105,7 @@ public class PhysiCloudLauncher {
 							@Override
 							public void handle(AsyncResult<String> res) {
 								if(res.succeeded()){
-									System.out.println("Deployed ResourceManagerVerticle!");
+									System.out.println("Deployed RequestTestVerticle!");
 								}
 							}
 						});

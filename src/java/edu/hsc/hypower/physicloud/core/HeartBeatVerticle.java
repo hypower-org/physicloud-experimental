@@ -78,7 +78,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 							neighborResourceMap.put(s, resourceNames);
 						}
 					}
-					System.out.println(neighborMap);
 					neighborMap.put(tempIp, new NeighborData(tempIp, neighborResourceMap));
 
 					// Update the last update time from this neighbor.

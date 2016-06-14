@@ -22,17 +22,13 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
 
 public class RequestTestVerticle extends AbstractVerticle {
 
-
-
 	@Override
 	public void start() throws Exception {
 		super.start();
 
 		System.out.println("Requests have started");
 
-		vertx.setPeriodic(1000, this::sendRequestMessage);
-
-
+		vertx.setPeriodic(10000, this::sendRequestMessage);
 	}
 
 	private final void sendRequestMessage(Long timerEvent){
@@ -50,25 +46,28 @@ public class RequestTestVerticle extends AbstractVerticle {
 		
 		for(String s : ipSet){
 
-			// TODO: Use an anonymous handler, as I sent in the email...
-			vertx.eventBus().send(s + ".KernelChannels.HEARTBEAT", reqMsg, reply -> {
+			vertx.eventBus().send(s + ".KernelChannels.HEARTBEAT", reqMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
 
-				// TODO: this code should go inside the handler function...
-//			JsonObject resultReply =  reply.result().body();
-//			
-//			//Output result from reply
-//			if(reply.succeeded()){		
-//			
-//				if(resultReply.getBoolean("Is Available")){
-//					System.out.println("Resource is Available");
-//				}
-//				else{
-//					System.out.println("Resource not Available");
-//				}
-//			}
-		});
 			
+				public void handle(AsyncResult<Message<JsonObject>> msg){	
+				
+				if(msg.succeeded()){
+					
+					JsonObject resultReply = msg.result().body();
+			
+			//Output result from reply
+					
+			
+				if(resultReply.getBoolean("Is Available")){
+					System.out.println("Resource is Available");
+				}
+				else{
+					System.out.println("Resource not Available");
+				}
+			
+					}}});
 		}
+			
 		
 
 
