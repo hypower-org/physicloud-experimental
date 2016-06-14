@@ -175,47 +175,33 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 		//Store Ip Address of CPU
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
-		String reqInfo = request.getString("Requested Value");		
-		LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-		
-		// TODO: Why are you getting the neighbor data map?
-		// You should be going through the LoclMaps: device names are in KernelMapNames.AVAILABLE_DEVICES
-		// Then you iterate through the data maps, see lines 63-64 in PhidgetInterfaceKitVerticle, checking
-		// to see if the requested data matches one of the values.
-		NeighborData reqNeighborData = neighborMap.get(ipAddr);
+		String reqInfo = request.getString("Requested Value");	
+		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);		
+		JsonObject infoReply = new JsonObject();		
+		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
 
-		// Check if the resource is available
-		// If it is, insert boolean true into JSON 
+		outerloop:
+			for(int i = 0; i < deviceMap.size(); i++){
+				for(Object key : vertx.sharedData().getLocalMap(deviceMap.get(i)).keySet()){
+					if(key.equals(reqInfo))	{
+						infoReply.put("Is Available", true);
+						break outerloop;
+					}
+					else	{
+						infoReply.put("Is Available", false);
 
-		// TODO: This logic is not correct once you remove reqNeighborData...
-		if(reqNeighborData != null && !reqNeighborData.toString().equals("")){	
+					}
+				}
+			}
 
+		//Create JSON to store IP address and requested resource
 
-			JsonObject infoReply = new JsonObject();		
+		msg.reply(infoReply);
 
-			System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
-
-			infoReply.put("Is Available", true);
-			//Create JSON to store IP address and requested resource
-
-			msg.reply(infoReply);
-
-			//This output statement is only valid for the test case of memory being the requested resource
-			//We need to figure out a way to output various data types
-			System.out.println("Value of Requested Resource: " + infoReply.getLong("Requested Value"));
-			System.out.println("Reply Sent!");
-
-		}
-
-		else	{
-
-			JsonObject infoReply = new JsonObject();
-			System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
-			infoReply.put("Is Available", false);
-			msg.reply(infoReply);
-			System.out.println("Reply Sent!");
-
-		}
+		//This output statement is only valid for the test case of memory being the requested resource
+		//We need to figure out a way to output various data types
+		//		System.out.println("Value of Requested Resource: " + infoReply.getLong("Requested Value"));
+		System.out.println("Reply Sent!");		
 
 	}
 
