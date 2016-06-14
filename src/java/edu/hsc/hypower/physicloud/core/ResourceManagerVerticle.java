@@ -180,9 +180,18 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		JsonObject infoReply = new JsonObject();		
 		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
 
+		
+		// This is what I came up with, I know that labels are a thing of the past 
+		// and I can change the outer loop to a while loop if you'd like. I was just having trouble 
+		// breaking out of the nested for loops if there was a match found. This code runs, but I am not entirely sure it is doing
+		// exactly what you wanted. 
+		
+		
 		outerloop:
 			for(int i = 0; i < deviceMap.size(); i++){
 				for(Object key : vertx.sharedData().getLocalMap(deviceMap.get(i)).keySet()){
+					// compare the key to the requested information?
+					// do not think that is right, but could not find a way to get the value attached to the key for comparison
 					if(key.equals(reqInfo))	{
 						infoReply.put("Is Available", true);
 						break outerloop;
