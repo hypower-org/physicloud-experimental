@@ -161,7 +161,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			}
 		}
 
-		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.READ_REQUEST, this::handleRequest);
+		vertx.eventBus().consumer(ipAddress + ".KernelChannels.READ_REQUEST", this::handleRequest);
 	}
 
 	// TODO: flesh out this functionality!

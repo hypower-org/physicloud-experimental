@@ -38,17 +38,18 @@ public class RequestTestVerticle extends AbstractVerticle {
 	
 		//Local copy of NeighborData
 		LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-		
+		System.out.println("Map Created");
 	
 		Set<String> ipSet = neighborMap.keySet();
 		
 		reqMsg.put("Requested Resource", "temperature.0");
-		
+		System.out.println("Proper JSON Created");
+		System.out.println(ipSet);
 		for(String s : ipSet){
-
+			System.out.println("Message sent");
 			vertx.eventBus().send(s + ".KernelChannels.HEARTBEAT", reqMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
 
-			
+				
 				public void handle(AsyncResult<Message<JsonObject>> msg){	
 				
 				if(msg.succeeded()){
