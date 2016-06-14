@@ -177,11 +177,17 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
 		String reqInfo = request.getString("Requested Value");		
 		LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+		
+		// TODO: Why are you getting the neighbor data map?
+		// You should be going through the LoclMaps: device names are in KernelMapNames.AVAILABLE_DEVICES
+		// Then you iterate through the data maps, see lines 63-64 in PhidgetInterfaceKitVerticle, checking
+		// to see if the requested data matches one of the values.
 		NeighborData reqNeighborData = neighborMap.get(ipAddr);
 
 		// Check if the resource is available
 		// If it is, insert boolean true into JSON 
 
+		// TODO: This logic is not correct once you remove reqNeighborData...
 		if(reqNeighborData != null && !reqNeighborData.toString().equals("")){	
 
 

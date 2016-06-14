@@ -49,22 +49,23 @@ public class RequestTestVerticle extends AbstractVerticle {
 		reqMsg.put("Requested Resource", "temperature.0");
 		
 		for(String s : ipSet){
-			
-			//TODO- ADD REPLY HANDLER
+
+			// TODO: Use an anonymous handler, as I sent in the email...
 			vertx.eventBus().send(s + ".KernelChannels.HEARTBEAT", reqMsg, reply -> {
-			
-			JsonObject resultReply =  reply.result().body();
-			
-			//Output result from reply
-			if(reply.succeeded()){		
-			
-				if(resultReply.getBoolean("Is Available")){
-					System.out.println("Resource is Available");
-				}
-				else{
-					System.out.println("Resource not Available");
-				}
-			}
+
+				// TODO: this code should go inside the handler function...
+//			JsonObject resultReply =  reply.result().body();
+//			
+//			//Output result from reply
+//			if(reply.succeeded()){		
+//			
+//				if(resultReply.getBoolean("Is Available")){
+//					System.out.println("Resource is Available");
+//				}
+//				else{
+//					System.out.println("Resource not Available");
+//				}
+//			}
 		});
 			
 		}
