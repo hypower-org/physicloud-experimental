@@ -7,5 +7,6 @@ public final class PhidgetNames {
 	public static final String AIN = "ain";
 	public static final String DIN = "din";
 	public static final String DOU = "dou";
+	public static final String PHIDGET_RFID = "PhidgetRFID";
 
 }

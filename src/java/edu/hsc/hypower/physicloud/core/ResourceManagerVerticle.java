@@ -155,7 +155,14 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 				if(deviceName.equals(PhidgetNames.PHIDGET_GPS))
 				{
+					//TODO: EXPAND THIS FUNCTIONALITY 
 					// specify for phidget gps
+				}
+				
+				if(deviceName.equals(PhidgetNames.PHIDGET_RFID))
+				{
+					//TODO: EXPAND THIS FUNCTIONALITY 
+					// specify for phidget RFID
 				}
 
 			}
