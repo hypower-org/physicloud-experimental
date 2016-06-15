@@ -12,10 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.config.Config;
 
-import edu.hsc.hypower.physicloud.core.HeartBeatVerticle;
-import edu.hsc.hypower.physicloud.core.RequestHandlerVerticle;
-import edu.hsc.hypower.physicloud.core.RequestTestVerticle;
-import edu.hsc.hypower.physicloud.core.ResourceManagerVerticle;
+import edu.hsc.hypower.physicloud.core.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;

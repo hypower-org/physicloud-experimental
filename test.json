@@ -1,52 +1,17 @@
 {
 
-    "IP" : "127.0.0.1",
+    "IP" : "10.42.0.1",
     "Location" : "East wall",	
     "securityCode" : "h27ce566382jdiii238d",
-    "heartBeatPeriod" : 500,
+    "heartBeatPeriod" : 1000,
 
 
     "device.PhidgetIKit":		{
 				    
 
-			"ain.7" : "temp",
-			"ain.6" : "humidity",
-			"ain.5" : "light",
-			"ain.4" : "pressure", 
-			"ain.3" : "vibration",
-			"ain.2" : "magnetic",
-			"ain.1" : "sound",
-			"ain.0" : "motion",
-
-			"din.7" : "a",
-			"din.6" : "b",
-			"din.5" : "c",
-			"din.4" : "d", 
-			"din.3" : "e",
-			"din.2" : "f",
-			"din.1" : "g",
-			"din.0" : "h",
-
-			"dou.7" : "x",
-			"dou.6" : "y",
-			"dou.5" : "z",
-			"dou.4" : "p", 
-			"dou.3" : "d",
-			"dou.2" : "q",
-			"dou.1" : " ",
-			"dou.0" : " " 
-			
-		    
-
-		},
-
-
-   "device.PhidgetGPS" :
-		{
-
-
+			"ain.1" : "humidity",
+			"ain.0" : "temperature"
 
 		}
 
-        
 }

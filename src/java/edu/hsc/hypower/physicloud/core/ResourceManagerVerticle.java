@@ -161,7 +161,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			}
 		}
 
-		vertx.eventBus().consumer(ipAddress + ".KernelChannels.READ_REQUEST", this::handleRequest);
+		// TODO: Guys, we made kernel channel names. Use these to maintain consistency.
+		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.READ_REQUEST, this::handleRequest);
 	}
 
 	// TODO: flesh out this functionality!
@@ -173,9 +174,13 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 		System.out.println("Request Receieved");
 
-		//Store Ip Address of CPU
+		// TODO: IP is not sent in the message - coordinate with Keith on this...
+		
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
-		String reqInfo = request.getString("Requested Value");	
+		String reqInfo = request.getString("Requested Resource");	
+		
+		System.out.println("Asking for " + reqInfo);
+		
 		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);		
 		JsonObject infoReply = new JsonObject();		
 		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
@@ -185,26 +190,47 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		// and I can change the outer loop to a while loop if you'd like. I was just having trouble 
 		// breaking out of the nested for loops if there was a match found. This code runs, but I am not entirely sure it is doing
 		// exactly what you wanted. 
-		
-		
-		outerloop:
-			for(int i = 0; i < deviceMap.size(); i++){
-				for(Object key : vertx.sharedData().getLocalMap(deviceMap.get(i)).keySet()){
-					// compare the key to the requested information?
-					// do not think that is right, but could not find a way to get the value attached to the key for comparison
-					if(key.equals(reqInfo))	{
-						infoReply.put("Is Available", true);
-						break outerloop;
-					}
-					else	{
-						infoReply.put("Is Available", false);
 
-					}
+		// TODO: Your code was fine - I did some tweaks to make it more readable and using different data structures.
+		
+		// Store the device names in an array list...
+		ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
+		outerloop:
+		for(String deviceName : deviceNames){
+			
+			// We operate under the assumption that the keys are strings...
+			for(Object key : vertx.sharedData().getLocalMap(deviceName).keySet()){
+				
+				if(((String) key).compareTo(reqInfo) == 0){
+					infoReply.put("Is Available", true);
+					break outerloop;
 				}
 			}
+		}
+
+		// TODO: if we get through the whole loop, then it is not there!
+		infoReply.put("Is Available", false);
+
+//		outerloop:
+//			for(int i = 0; i < deviceMap.size(); i++){
+//				for(Object key : vertx.sharedData().getLocalMap(deviceMap.get(i)).keySet()){
+//
+//					// compare the key to the requested information?
+//					// do not think that is right, but could not find a way to get the value attached to the key for comparison
+//					// TODO: Yes - the keys are resource names.
+//					if(key.equals(reqInfo))	{
+//						infoReply.put("Is Available", true);
+//						break outerloop;
+//					}
+//					else	{
+//						infoReply.put("Is Available", false);
+//
+//					}
+//				}
+//			}
 
 		//Create JSON to store IP address and requested resource
-
+		System.out.println(infoReply.encodePrettily());
 		msg.reply(infoReply);
 
 		//This output statement is only valid for the test case of memory being the requested resource

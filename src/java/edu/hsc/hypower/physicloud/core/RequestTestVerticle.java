@@ -32,41 +32,41 @@ public class RequestTestVerticle extends AbstractVerticle {
 	}
 
 	private final void sendRequestMessage(Long timerEvent){
-		
+
 		//JsonObject for request
 		JsonObject reqMsg = new JsonObject();
-	
+
 		//Local copy of NeighborData
 		LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-	
-		Set<String> ipSet = neighborMap.keySet();
-		
-		reqMsg.put("Requested Resource", "temperature.0");
-	
-		for(String s : ipSet){
-			vertx.eventBus().send(s + ".KernelChannels.HEARTBEAT", reqMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
 
-				
+		Set<String> ipSet = neighborMap.keySet();
+
+		reqMsg.put("Requested Resource", "temperature.0");
+
+		for(String s : ipSet){
+			vertx.eventBus().send(s + "." + KernelChannels.READ_REQUEST, reqMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
+
+
 				public void handle(AsyncResult<Message<JsonObject>> msg){	
-				
-				if(msg.succeeded()){
-					
-					JsonObject resultReply = msg.result().body();
-			
-			//Output result from reply
-					
-			
-				if(resultReply.getBoolean("Is Available")){
-					System.out.println("Resource is Available");
-				}
-				else{
-					System.out.println("Resource not Available");
-				}
-			
+
+					if(msg.succeeded()){
+
+						JsonObject resultReply = msg.result().body();
+
+						//Output result from reply
+
+
+						if(resultReply.getBoolean("Is Available")){
+							System.out.println("Resource is Available");
+						}
+						else{
+							System.out.println("Resource not Available");
+						}
+
 					}}});
 		}
-			
-		
+
+
 
 
 	}
