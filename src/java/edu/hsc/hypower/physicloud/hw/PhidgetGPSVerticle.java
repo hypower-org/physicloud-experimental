@@ -19,19 +19,10 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 	private final String verticleName;
 	private final Long updatePeriod = 100l;
 
-	private final ArrayList<Double> latitude;
-	private final ArrayList<Double> longitude;
-	private final ArrayList<Double> altitude;
-	private final ArrayList<Double> velocity;
-
 	private GPSPhidget gps;
 
-	public PhidgetGPSVerticle(String n, ArrayList<Double> latIn,ArrayList<Double> longIn, ArrayList<Double> altIn, ArrayList<Double> velIn){
+	public PhidgetGPSVerticle(String n){
 		verticleName = n;
-		latitude = latIn;
-		longitude = longIn;
-		altitude = altIn;
-		velocity = velIn;
 	}
 
 	public void start() throws Exception {
