@@ -6,7 +6,7 @@ import java.util.Map;
 import com.phidgets.*;
 import com.phidgets.event.AttachEvent;
 import com.phidgets.event.AttachListener;
-
+import com.phidgets.event.GPSPositionChangeListener;
 
 import edu.hsc.hypower.physicloud.KernelChannels;
 
@@ -56,9 +56,13 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 		LocalMap<Double, Double> latLongMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.LAT_LONG);
 		LocalMap<Double, Double> altVelMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ALT_VEL);
 
-		// This almost seems to simple, but because of the simple "getter" functions provided by the library I think it is all we need
-		// You were correct when you said the IKIT was going to be the biggest beast of the Phidget family!
+		// This almost seems too simple, but because of the simple "getter" functions provided by the library I think it is all we need
+		// Do we need to incorporate the GPSPositionChangeListener?
+		
 
+		GPSPositionChangeListener GPSPositionChangeListener = null;
+		gps.addGPSPositionChangeListener(GPSPositionChangeListener);
+		
 		try {
 			latLongMap.put(gps.getLongitude(), gps.getLatitude());
 			altVelMap.put(gps.getAltitude(), gps.getVelocity());
