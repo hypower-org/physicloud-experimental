@@ -6,8 +6,6 @@ import com.phidgets.*;
 import com.phidgets.event.AttachEvent;
 import com.phidgets.event.AttachListener;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import edu.hsc.hypower.physicloud.KernelChannels;
 
 import io.vertx.core.AbstractVerticle;
