@@ -21,6 +21,9 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 
 	private GPSPhidget gps;
 
+	// I experimented with structuring the class similar to IKITVerticle, with Map<K,V> 
+	// as private data members but I did not see the need for them
+
 	public PhidgetGPSVerticle(String n){
 		verticleName = n;
 	}
@@ -29,8 +32,6 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 		super.start();
 		try {
 			gps = new GPSPhidget();
-			// TODO: need to handle HW attachment better!
-			//		long startTime = System.currentTimeMillis();
 			gps.openAny();
 			gps.addAttachListener(new AttachListener() {
 				public void attached(AttachEvent ae)	{
@@ -38,9 +39,7 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 				}
 			});
 			gps.waitForAttachment();
-			//		long endTime   = System.currentTimeMillis();
-			//		System.out.println(endTime - startTime);
-
+			
 		} catch (PhidgetException e) {
 			e.printStackTrace();
 		}
@@ -52,9 +51,14 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 
 	public final void updateSensorData(Long l) {
 
+		// Are these maps alright? or would we rather have a list for each sensor value?
+
 		LocalMap<Double, Double> latLongMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.LAT_LONG);
 		LocalMap<Double, Double> altVelMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ALT_VEL);
-		
+
+		// This almost seems to simple, but because of the simple "getter" functions provided by the library I think it is all we need
+		// You were correct when you said the IKIT was going to be the biggest beast of the Phidget family!
+
 		try {
 			latLongMap.put(gps.getLongitude(), gps.getLatitude());
 			altVelMap.put(gps.getAltitude(), gps.getVelocity());
