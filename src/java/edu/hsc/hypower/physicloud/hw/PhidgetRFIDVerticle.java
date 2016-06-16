@@ -4,48 +4,58 @@ import io.vertx.core.AbstractVerticle;
 import com.phidgets.*;
 import com.phidgets.event.AttachEvent;
 import com.phidgets.event.AttachListener;
+import com.phidgets.event.TagGainEvent;
+import com.phidgets.event.TagGainListener;
+import com.phidgets.event.TagLossEvent;
+import com.phidgets.event.TagLossListener;
 
 public class PhidgetRFIDVerticle extends AbstractVerticle {
 	
-	private RFIDPhidget rkit;
+	private RFIDPhidget rfid;
 	
 	
 	@Override
 	public void start() throws Exception {
 		super.start();
 		try{
-			rkit = new RFIDPhidget();
-			rkit.addAttachListener(new AttachListener() {
+			rfid = new RFIDPhidget();
+			rfid.addAttachListener(new AttachListener() {
 				public void attached(AttachEvent ae)	{
 					System.out.println("A new RFID Reader has been attached.");
 				}
 		});
-		rkit.waitForAttachment();
+		rfid.waitForAttachment();
 		
 		} catch (PhidgetException e) {
 			e.printStackTrace();
 		}
 		
-		vertx.setPeriodic(10000, this::updateRFID);
+		rfid.addTagGainListener(new TagGainListener()
+		{
+			public void tagGained(TagGainEvent oe)
+			{
+				if(oe.getValue() == "1000e0a20a")//This is the ID of one of the white cards 
+				{
+					System.out.println("Menu Unlocked");
+				}
+				else
+					System.out.println("Improper RFID Tag");
+		
+			}
+		});
+		
+//		rfid.addTagLossListener(new TagLossListener()
+//		{
+//			public void tagLost(TagLossEvent oe)
+//			{
+//				System.out.println(oe);
+//			}
+//		});
+		
 
 }
 	
-	public final void updateRFID(Long l){
-		
-		//TODO Still need to add way to read information from RFID reader
-		//As a result, the below code is not at ALL complete
-		
-		//Check if tag has been scanned
-		
-		
-		
-		//Get ID of RFID tag
-		
-		//Get information stored on RFID tag
-		
-		//Attempt to re-write trag
-	}
-	
+
 	
 	@Override
 	public void stop() throws Exception {
