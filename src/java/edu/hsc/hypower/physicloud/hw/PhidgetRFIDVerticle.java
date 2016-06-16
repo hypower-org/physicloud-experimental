@@ -32,7 +32,18 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 	
 	public final void updateRFID(Long l){
 		
-		//Still need to add way to read information from RFID reader
+		//TODO Still need to add way to read information from RFID reader
+		//As a result, the below code is not at ALL complete
+		
+		//Check if tag has been scanned
+		
+		
+		
+		//Get ID of RFID tag
+		
+		//Get information stored on RFID tag
+		
+		//Attempt to re-write trag
 	}
 	
 	
