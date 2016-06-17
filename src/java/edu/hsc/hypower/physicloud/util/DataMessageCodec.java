@@ -12,7 +12,7 @@ public class DataMessageCodec implements MessageCodec<DataMessage, DataMessage>{
 
 	@Override								
 	public void encodeToWire(Buffer buffer, DataMessage x) {
-
+				
 		JsonObject jsonToEncode = new JsonObject();
 
 		jsonToEncode.put("id", x.getId());
@@ -38,7 +38,7 @@ public class DataMessageCodec implements MessageCodec<DataMessage, DataMessage>{
 
 	@Override
 	public DataMessage decodeFromWire(int position, Buffer buffer) {
-
+		
 		int pos = position;
 		int length = buffer.getInt(pos);
 
@@ -74,7 +74,7 @@ public class DataMessageCodec implements MessageCodec<DataMessage, DataMessage>{
 
 	@Override
 	public DataMessage transform(DataMessage s) {
-		return null;
+		return s;
 	}
 
 }
