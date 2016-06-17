@@ -22,6 +22,8 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 	private final Map<Integer, String> digitalOut;
 
 	private InterfaceKitPhidget ikit;
+	
+	private Long updateTimerId;
 
 	public PhidgetInterfaceKitVerticle(String n, Map<Integer, String> aIn, Map<Integer, String> dIn, Map<Integer, String> dOut){
 		verticleName = n;
@@ -52,7 +54,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 			e.printStackTrace();
 		}
 
-		vertx.setPeriodic(updatePeriod, this::updateSensorData);
+		updateTimerId = vertx.setPeriodic(updatePeriod, this::updateSensorData);
 
 	}
 
@@ -103,6 +105,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 
 	@Override
 	public void stop() throws Exception {
+		vertx.cancelTimer(updateTimerId);
 		ikit.close();
 		super.stop();
 	}

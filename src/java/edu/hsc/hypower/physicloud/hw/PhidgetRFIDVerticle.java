@@ -59,6 +59,7 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 	
 	@Override
 	public void stop() throws Exception {
+		rfid.close();
 		super.stop();
 	}
 

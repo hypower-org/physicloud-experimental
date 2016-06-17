@@ -72,6 +72,12 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 		}
 	}
 
+	@Override
+	public void stop() throws Exception {
+		gps.close();
+		super.stop();
+	}
+
 
 
 

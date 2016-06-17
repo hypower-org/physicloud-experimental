@@ -14,14 +14,14 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
 
-public class ThreeByThreeVerticle extends AbstractVerticle{
+public class PhidgetSpatialVerticle extends AbstractVerticle{
 
 
 	private final String verticleName;
 	private final Long updatePeriod = 100l;
-	private SpatialPhidget tkit;	
+	private SpatialPhidget sp;	
 
-	public ThreeByThreeVerticle(String n){
+	public PhidgetSpatialVerticle(String n){
 		verticleName = n;
 	}
 
@@ -29,13 +29,13 @@ public class ThreeByThreeVerticle extends AbstractVerticle{
 	public void start() throws Exception {
 		super.start();
 		try{
-			tkit = new SpatialPhidget();
-			tkit.addAttachListener(new AttachListener() {
+			sp = new SpatialPhidget();
+			sp.addAttachListener(new AttachListener() {
 				public void attached(AttachEvent ae)	{
 					System.out.println("A new 3/3/3 Sensor has been attached.");
 				}
 			});
-			tkit.waitForAttachment();
+			sp.waitForAttachment();
 
 		} catch (PhidgetException e) {
 			e.printStackTrace();
@@ -51,17 +51,17 @@ public class ThreeByThreeVerticle extends AbstractVerticle{
 			LocalMap<Integer, Double> accelerationMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ACCELERATION);
 			LocalMap<Integer, Double> gyroMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ACCELERATION);
 
-			int gyroAxisCount = tkit.getGyroAxisCount();
-			int accelerationAxis = tkit.getAccelerationAxisCount();
+			int gyroAxisCount = sp.getGyroAxisCount();
+			int accelerationAxis = sp.getAccelerationAxisCount();
 
 			for(int i = 0; i < accelerationAxis; i++)
 			{				
-				accelerationMap.put((Integer) i, tkit.getAcceleration(i));
+				accelerationMap.put((Integer) i, sp.getAcceleration(i));
 			}
 
 			for(int i = 0; i < gyroAxisCount; i++)
 			{
-				gyroMap.put((Integer) i, tkit.getAngularRate(i)); 
+				gyroMap.put((Integer) i, sp.getAngularRate(i)); 
 			}
 		} catch (PhidgetException e) {
 			e.printStackTrace();
@@ -71,6 +71,7 @@ public class ThreeByThreeVerticle extends AbstractVerticle{
 
 	@Override
 	public void stop() throws Exception {
+		sp.close();
 		super.stop();
 	}
 
