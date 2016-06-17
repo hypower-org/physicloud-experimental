@@ -103,6 +103,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 
 	@Override
 	public void stop() throws Exception {
+		ikit.close();
 		super.stop();
 	}
 

@@ -107,6 +107,26 @@ public class PhysiCloudLauncher {
 							}
 						});
 						
+						vertx.setPeriodic(20000, new Handler<Long>() {
+
+							@Override
+							public void handle(Long event) {
+								// TODO Auto-generated method stub
+								
+								vertx.close(new Handler<AsyncResult<Void>>(){
+
+									@Override
+									public void handle(AsyncResult<Void> event) {
+										// TODO Auto-generated method stub
+										System.exit(0);
+									}
+									
+								});
+								
+							}
+							
+						});
+						
 					}
 				}
 			};
