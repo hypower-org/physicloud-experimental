@@ -18,7 +18,7 @@ public class DataMessageCodec implements MessageCodec<DataMessage, DataMessage>{
 		jsonToEncode.put("id", x.getId());
 		JsonArray tupleArray = new JsonArray();
 
-		ArrayList<String> tupleList = x.getList();
+		ArrayList<DataTuple> tupleList = x.getList();
 
 		for(int i = 0; i < tupleList.size(); i++) {
 			tupleArray.add(tupleList.get(i).toString());
@@ -45,10 +45,10 @@ public class DataMessageCodec implements MessageCodec<DataMessage, DataMessage>{
 		String jsonStr = buffer.getString(pos+=4, pos+=length);
 		JsonObject contentJson = new JsonObject(jsonStr);
 
-		int id = contentJson.getInteger("id");
+		String id = contentJson.getString("id");
 		JsonArray data = contentJson.getJsonArray("data");
-		DataTuple tuple = new DataTuple;
-		ArrayList<DataTuple> forMessage = new ArrayList<DataTuple>;
+		DataTuple tuple = null;
+		ArrayList<DataTuple> forMessage = new ArrayList<DataTuple>();
 
 		for(int i = 0; i < data.size(); i++)	{
 			String tupleData = data.getString(i);

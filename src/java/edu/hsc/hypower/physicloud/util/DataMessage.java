@@ -19,9 +19,9 @@ import io.vertx.core.shareddata.LocalMap;
 public class DataMessage {
 
 	private final String id;
-	private final ArrayList<String> tupleList;
+	private final ArrayList<DataTuple> tupleList;
 
-	public DataMessage(String n, ArrayList<String> x){
+	public DataMessage(String n, ArrayList<DataTuple> x){
 		id = n;
 		tupleList = x;
 	}
@@ -30,7 +30,7 @@ public class DataMessage {
 		return id;
 	}
 	
-	public ArrayList<String> getList()	{
+	public ArrayList<DataTuple> getList()	{
 		return tupleList;
 	}
 	
