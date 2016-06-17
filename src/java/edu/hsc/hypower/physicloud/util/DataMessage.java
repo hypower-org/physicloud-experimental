@@ -1,21 +1,18 @@
 package edu.hsc.hypower.physicloud.util;
 
-import java.awt.List;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import com.phidgets.*;
-import com.phidgets.event.AttachEvent;
-import com.phidgets.event.AttachListener;
-import com.phidgets.event.GPSPositionChangeListener;
 
-import edu.hsc.hypower.physicloud.KernelChannels;
-
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Vertx;
-import io.vertx.core.shareddata.LocalMap;
-
-
+/**
+ * A class that holds a list of DataTuples. One packages PhysiCloud data using
+ * these tuples.
+ * 
+ * Example: GPS has two floats, lat and long. Then a receiving task would declare
+ * the need for the resource: (float, float) gps. The tupleList will hold two elements
+ * satisfying this data need.
+ * 
+ * @author hackleyb18@hsc.edu
+ *
+ */
 public class DataMessage {
 
 	private final String id;

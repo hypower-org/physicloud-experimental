@@ -1,5 +1,13 @@
 package edu.hsc.hypower.physicloud.util;
 
+/**
+ * Class that represents a PhysiCloud data and its type.
+ * Consumers of this object should know what they are receiving and
+ * cast accordingly based on the type.
+ * 
+ * @author kengask18@hsc.edu
+ *
+ */
 public class DataTuple {
 	
 	private final String type;

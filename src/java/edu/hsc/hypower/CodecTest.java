@@ -14,7 +14,6 @@ import io.vertx.core.eventbus.Message;
 public class CodecTest {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		
 		Vertx v = Vertx.vertx();
 		v.eventBus().registerDefaultCodec(DataMessage.class, new DataMessageCodec());
@@ -23,9 +22,9 @@ public class CodecTest {
 			@Override
 			public void handle(Long event) {
 				
-				DataTuple x = new DataTuple(new Float(500));
+				DataTuple dataTuple = new DataTuple(new Float(500));
 				ArrayList<DataTuple> tupleArr = new ArrayList<DataTuple>();
-				tupleArr.add(x);
+				tupleArr.add(dataTuple);
 				DataMessage m = new DataMessage("id", tupleArr);
 				v.eventBus().publish("1010101", m);
 			}
@@ -37,8 +36,11 @@ public class CodecTest {
 			@Override
 			public void handle(Message<DataMessage> event) {
 				// TODO Auto-generated method stub
-				DataMessage x = event.body();
-				System.out.println(x.getId());
+				DataMessage msg = event.body();
+				System.out.println(msg.getId());
+				for(DataTuple dt : msg.getList()){
+					System.out.println(dt);
+				}
 				
 			}
 			

@@ -7,18 +7,17 @@ import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-
 public class DataMessageCodec implements MessageCodec<DataMessage, DataMessage>{
 
 	@Override								
-	public void encodeToWire(Buffer buffer, DataMessage x) {
+	public void encodeToWire(Buffer buffer, DataMessage msg) {
 				
 		JsonObject jsonToEncode = new JsonObject();
 
-		jsonToEncode.put("id", x.getId());
+		jsonToEncode.put("id", msg.getId());
 		JsonArray tupleArray = new JsonArray();
 
-		ArrayList<DataTuple> tupleList = x.getList();
+		ArrayList<DataTuple> tupleList = msg.getList();
 
 		for(int i = 0; i < tupleList.size(); i++) {
 			tupleArray.add(tupleList.get(i).toString());
@@ -52,7 +51,6 @@ public class DataMessageCodec implements MessageCodec<DataMessage, DataMessage>{
 		for(int i = 0; i < data.size(); i++)	{
 			String tupleData = data.getString(i);
 			forMessage.add(DataTuple.fromString(tupleData));
-
 		}
 
 		return new DataMessage(id, forMessage);
