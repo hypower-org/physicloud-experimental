@@ -47,12 +47,11 @@ public class DataMessageCodec implements MessageCodec<DataMessage, DataMessage>{
 
 		String id = contentJson.getString("id");
 		JsonArray data = contentJson.getJsonArray("data");
-		DataTuple tuple = null;
 		ArrayList<DataTuple> forMessage = new ArrayList<DataTuple>();
 
 		for(int i = 0; i < data.size(); i++)	{
 			String tupleData = data.getString(i);
-			forMessage.add(tuple.fromString(tupleData));
+			forMessage.add(DataTuple.fromString(tupleData));
 
 		}
 

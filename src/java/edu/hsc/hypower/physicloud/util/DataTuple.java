@@ -50,7 +50,7 @@ public class DataTuple {
 		return sTup;
 	}
 
-	public final DataTuple fromString(String s){
+	public static final DataTuple fromString(String s){
 	
 		String[] parseTuple = s.substring(1,s.length()-1).split(",");
 		System.out.println(parseTuple[0]);
