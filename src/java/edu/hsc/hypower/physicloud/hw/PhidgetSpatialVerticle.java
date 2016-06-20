@@ -51,7 +51,7 @@ public class PhidgetSpatialVerticle extends AbstractVerticle{
 			LocalMap<Integer, Double> accelerationMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ACCELERATION);
 			LocalMap<Integer, Double> gyroMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ACCELERATION);
 
-			int gyroAxisCount = sp.getGyroAxisCount();
+			int gAxisCount = sp.getGyroAxisCount();
 			int accelerationAxis = sp.getAccelerationAxisCount();
 
 			for(int i = 0; i < accelerationAxis; i++)
@@ -59,7 +59,7 @@ public class PhidgetSpatialVerticle extends AbstractVerticle{
 				accelerationMap.put((Integer) i, sp.getAcceleration(i));
 			}
 
-			for(int i = 0; i < gyroAxisCount; i++)
+			for(int i = 0; i < gAxisCount; i++)
 			{
 				gyroMap.put((Integer) i, sp.getAngularRate(i)); 
 			}
