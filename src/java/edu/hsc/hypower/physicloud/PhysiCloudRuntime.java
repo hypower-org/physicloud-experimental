@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.config.Config;
 
+import clojure.lang.PersistentHashMap;
 import edu.hsc.hypower.physicloud.core.*;
 import edu.hsc.hypower.physicloud.util.NeighborData;
 import io.vertx.core.AbstractVerticle;
@@ -31,19 +32,18 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
  * @author pmartin@hsc.edu
  *         hackleyb18@hsc.edu
  */
-public class PhysiCloudRuntime {
+public class PhysiCloudRuntime(String configfileName) {
 	
 }
 
 		public final void start(){
-		// Read in properties file, which is JSON
+			
+			ObjectMapper mapper = new ObjectMapper();
+			
+			JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));		
+			
 		try	{
 
-			ObjectMapper mapper = new ObjectMapper();
-
-			//String configFileName = args[0];
-			
-			JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));
 
 			String nodeIp = rootNode.get("IP").asText();											// retrieve IP	
 			System.out.println("Sensor node IP Address: " + nodeIp);
@@ -157,18 +157,24 @@ public class PhysiCloudRuntime {
 					
 				}
 				
-			public final "RETURN TYPE HERE" getNeighborData(){
-				LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+			public final PersistentHashMap getNeighborData(){
 				//TODO implement getNeighborData function
 				//Gets neighbor map and returns a PersistentHashMap (clojure object)
+				
+				LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+				
+				//I am unsure how to use the PersistentHashMap, as the API is not too helpful
+				PersistentHashMap nData = new PersistentHashMap(String, NeighborData);
+				return
+			
+				
 			}
 			
 			public final boolean isResourceAvailable(String resource){
-				//TODO implement isResourceAvailable function
-				//Checks if the passed in resource is available in the local map
+				//Potentially finished
 				
 				LocalMap<Integer,String> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-				ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
+				ArrayList<String> deviceNames = new ArrayList<String>(vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES).values());
 				outerloop:
 				for(String deviceName : deviceNames){
 					
@@ -179,12 +185,14 @@ public class PhysiCloudRuntime {
 						}
 					}
 				}
+				return false;
 			
 		
 			}
+		}
 				
 			
-		}
+		
 	
 
 
