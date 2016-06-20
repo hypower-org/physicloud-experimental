@@ -10,10 +10,10 @@ import com.phidgets.event.TagLossEvent;
 import com.phidgets.event.TagLossListener;
 
 public class PhidgetRFIDVerticle extends AbstractVerticle {
-	
+
 	private RFIDPhidget rfid;
-	
-	
+
+
 	@Override
 	public void start() throws Exception {
 		super.start();
@@ -23,13 +23,13 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 				public void attached(AttachEvent ae)	{
 					System.out.println("A new RFID Reader has been attached.");
 				}
-		});
-		rfid.waitForAttachment();
-		
+			});
+			rfid.waitForAttachment();
+
 		} catch (PhidgetException e) {
 			e.printStackTrace();
 		}
-		
+
 		rfid.addTagGainListener(new TagGainListener()
 		{
 			public void tagGained(TagGainEvent oe)
@@ -40,28 +40,28 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 				}
 				else
 					System.out.println("Improper RFID Tag");
-		
+
 			}
 		});
-		
-//		rfid.addTagLossListener(new TagLossListener()
-//		{
-//			public void tagLost(TagLossEvent oe)
-//			{
-//				System.out.println(oe);
-//			}
-//		});
-		
 
-}
-	
+		//		rfid.addTagLossListener(new TagLossListener()
+		//		{
+		//			public void tagLost(TagLossEvent oe)
+		//			{
+		//				System.out.println(oe);
+		//			}
+		//		});
 
-	
+
+	}
+
+
+
 	@Override
 	public void stop() throws Exception {
 		rfid.close();
 		super.stop();
 	}
 
-	
+
 }

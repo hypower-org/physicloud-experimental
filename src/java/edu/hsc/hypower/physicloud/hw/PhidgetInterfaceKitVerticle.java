@@ -22,7 +22,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 	private final Map<Integer, String> digitalOut;
 
 	private InterfaceKitPhidget ikit;
-	
+
 	private Long updateTimerId;
 
 	public PhidgetInterfaceKitVerticle(String n, Map<Integer, String> aIn, Map<Integer, String> dIn, Map<Integer, String> dOut){
@@ -39,7 +39,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		try {
 			ikit = new InterfaceKitPhidget();
 			// TODO: need to handle HW attachment better!
-//			long startTime = System.currentTimeMillis();
+			//			long startTime = System.currentTimeMillis();
 			ikit.openAny();
 			ikit.addAttachListener(new AttachListener() {
 				public void attached(AttachEvent ae)	{
@@ -47,8 +47,8 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 				}
 			});
 			ikit.waitForAttachment();
-//			long endTime   = System.currentTimeMillis();
-//			System.out.println(endTime - startTime);
+			//			long endTime   = System.currentTimeMillis();
+			//			System.out.println(endTime - startTime);
 
 		} catch (PhidgetException e) {
 			e.printStackTrace();
@@ -75,7 +75,7 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 				data = ikit.getSensorValue(i);
 				String sensorType = analogIn.get(new Integer(i));
 				ainDataMap.put(sensorType + "." + Integer.toString(i), data);
-//				System.out.println(sensorType + "." + Integer.toString(i) + " : " + data);
+				//				System.out.println(sensorType + "." + Integer.toString(i) + " : " + data);
 			} catch (PhidgetException pe) {
 				pe.printStackTrace();
 			}
