@@ -5,7 +5,7 @@ package edu.hsc.hypower.physicloud.util;
  * Consumers of this object should know what they are receiving and
  * cast accordingly based on the type.
  * 
- * @author kengask18@hsc.edu
+ * @author kangask18@hsc.edu
  *
  */
 public class DataTuple {
