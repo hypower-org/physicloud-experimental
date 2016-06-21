@@ -39,26 +39,21 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 public class PhysiCloudRuntime {
 
-	
+
 	private Vertx vertx;
-	
 	private JsonNode rootNode;
-	
 	private String nodeIp;
-	
 	private String deviceLocation;
-	
 	private String secCode;
-	
 	private long heartBeatPeriod;
-	
+
 	// 3 - Any other information we may want hold onto in the core of the runtime.
-	
+
 	public PhysiCloudRuntime(String configFileName) throws JsonProcessingException, IOException{
 		ObjectMapper mapper = new ObjectMapper();
 
 		JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));
-		
+
 		String nodeIp = rootNode.get("IP").asText();											// retrieve IP	
 		System.out.println("Sensor node IP Address: " + nodeIp);
 
@@ -71,23 +66,23 @@ public class PhysiCloudRuntime {
 		long heartBeatPeriod = rootNode.get("heartBeatPeriod").asLong();						// retrieve heart beat period
 		System.out.println("Sensor node heart beat period: " + heartBeatPeriod);
 	}
-	
-	
+
+
 	public static void main(String[] args) throws JsonProcessingException, IOException {
-		
+
 		PhysiCloudRuntime test = new PhysiCloudRuntime(args[0]);
-		
+
 		test.start();
-//		new java.util.Timer().schedule( 
-//		        new java.util.TimerTask() {
-//		            @Override
-//		            public void run() {
-//		                test.stop();
-//		            }
-//		        }, 
-//		        10000 
-//		);
-		
+		//		new java.util.Timer().schedule( 
+		//		        new java.util.TimerTask() {
+		//		            @Override
+		//		            public void run() {
+		//		                test.stop();
+		//		            }
+		//		        }, 
+		//		        10000 
+		//		);
+
 	}
 
 	public final void start(){
@@ -108,21 +103,21 @@ public class PhysiCloudRuntime {
 		Handler<AsyncResult<Vertx>> resultHandler = new Handler<AsyncResult<Vertx>>(){
 			@Override
 			public void handle(AsyncResult<Vertx> asyncRes) {
-				
+
 				vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
 					@Override
 					public void handle(Message<JsonObject> msg) {
-						
+
 						JsonObject whoStops = msg.body();
-						
+
 						if(whoStops.getString("nIpAddr") == nodeIp)
 							stop();
-						
+
 						else if(whoStops.getString("nIpAddr") == "ALL")
 							stop();
 					}});
-					
-				
+
+
 				if(asyncRes.succeeded()){
 					System.out.println("Clustered vertx launched.");
 					Vertx vertx = asyncRes.result();
@@ -168,7 +163,7 @@ public class PhysiCloudRuntime {
 
 	public final void stop(){
 		//TODO Test it
-		
+
 		vertx.close(new Handler<AsyncResult<Void>>(){
 
 			@Override
@@ -179,59 +174,59 @@ public class PhysiCloudRuntime {
 
 		});}
 
-		public final void stop(String ipAddr){
-			//TODO Test it
-			
-			JsonObject onlySleepNow = new JsonObject();
-			onlySleepNow.put("nIpAddr", ipAddr);
-			vertx.eventBus().publish(KernelChannels.HEARTBEAT, onlySleepNow);
-		}
+	public final void stop(String ipAddr){
+		//TODO Test it
 
-		public final void stopAll(){			
-			//TODO Test it
-			
-			JsonObject onlySleepNow = new JsonObject();
-			onlySleepNow.put("nIpAddr", "ALL");
-			vertx.eventBus().publish(KernelChannels.HEARTBEAT, onlySleepNow);
-		}
-
-//		public final PersistentHashMap getNeighborData(){
-//			//TODO implement getNeighborData function
-//			//Gets neighbor map and returns a PersistentHashMap (clojure object)
-//
-//			LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-//
-//			
-//			PersistentHashMap nData = new PersistentHashMap(0, null, false, nData);
-//			return nData;
-//		}
-
-		public final boolean isResourceAvailable(String resource){
-				
-			LocalMap<Integer,String> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
-			
-			for(int i = 0; i < neighborMap.size(); i++){
-	
-				for(Object key : vertx.sharedData().getLocalMap(neighborMap.get(i)).keySet()){
-					if(key == resource)
-						return true;
-				}
-			}
-			
-			return false;		
-		}
-		
-		public final void deployFunction(final String fnName, final String fn, long updatePeriod){
-			
-			vertx.deployVerticle(new DynamicVerticle(fnName, fn, updatePeriod), 
-					result -> {
-						if(result.succeeded()){
-							System.out.println(" DynamicVerticle " + fnName + " deployed!");
-						}
-					});
-			
-			vertx.eventBus().consumer(fnName, msg -> { System.out.println(msg.body()); });
-			
-		}	
-		
+		JsonObject onlySleepNow = new JsonObject();
+		onlySleepNow.put("nIpAddr", ipAddr);
+		vertx.eventBus().publish(KernelChannels.HEARTBEAT, onlySleepNow);
 	}
+
+	public final void stopAll(){			
+		//TODO Test it
+
+		JsonObject onlySleepNow = new JsonObject();
+		onlySleepNow.put("nIpAddr", "ALL");
+		vertx.eventBus().publish(KernelChannels.HEARTBEAT, onlySleepNow);
+	}
+
+	//		public final PersistentHashMap getNeighborData(){
+	//			//TODO implement getNeighborData function
+	//			//Gets neighbor map and returns a PersistentHashMap (clojure object)
+	//
+	//			LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+	//
+	//			
+	//			PersistentHashMap nData = new PersistentHashMap(0, null, false, nData);
+	//			return nData;
+	//		}
+
+	public final boolean isResourceAvailable(String resource){
+
+		LocalMap<Integer,String> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
+
+		for(int i = 0; i < neighborMap.size(); i++){
+
+			for(Object key : vertx.sharedData().getLocalMap(neighborMap.get(i)).keySet()){
+				if(key == resource)
+					return true;
+			}
+		}
+
+		return false;		
+	}
+
+	public final void deployFunction(final String fnName, final String fn, long updatePeriod){
+
+		vertx.deployVerticle(new DynamicVerticle(fnName, fn, updatePeriod), 
+				result -> {
+					if(result.succeeded()){
+						System.out.println(" DynamicVerticle " + fnName + " deployed!");
+					}
+				});
+
+		vertx.eventBus().consumer(fnName, msg -> { System.out.println(msg.body()); });
+
+	}	
+
+}
