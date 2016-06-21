@@ -12,6 +12,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.config.Config;
 
+import edu.hsc.hypower.physicloud.core.DynamicVerticle;
+import edu.hsc.hypower.physicloud.core.HeartBeatVerticle;
+
 import clojure.lang.PersistentHashMap;
 import edu.hsc.hypower.physicloud.core.*;
 import edu.hsc.hypower.physicloud.util.NeighborData;
@@ -22,6 +25,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Launcher;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.spi.cluster.ClusterManager;
@@ -32,14 +36,13 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
  * @author pmartin@hsc.edu
  *         hackleyb18@hsc.edu
  */
-// TODO: You need to declare classes correctly!
+
 public class PhysiCloudRuntime {
 
-	// TODO: The member variables of the class need to be here...
 	
-	// 1 - The vertx object
 	private Vertx vertx;
-	// 2 - All of the results from parsing the config file: nodeIp, etc. Make them private member variables.
+	
+	private JsonNode rootNode;
 	
 	private String nodeIp;
 	
@@ -51,7 +54,6 @@ public class PhysiCloudRuntime {
 	
 	// 3 - Any other information we may want hold onto in the core of the runtime.
 	
-	// TODO: Now make the constructor...
 	public PhysiCloudRuntime(String configFileName) throws JsonProcessingException, IOException{
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -69,88 +71,104 @@ public class PhysiCloudRuntime {
 		long heartBeatPeriod = rootNode.get("heartBeatPeriod").asLong();						// retrieve heart beat period
 		System.out.println("Sensor node heart beat period: " + heartBeatPeriod);
 	}
+	
+	
+	public static void main(String[] args) throws JsonProcessingException, IOException {
+		
+		PhysiCloudRuntime test = new PhysiCloudRuntime(args[0]);
+		
+		test.start();
+//		new java.util.Timer().schedule( 
+//		        new java.util.TimerTask() {
+//		            @Override
+//		            public void run() {
+//		                test.stop();
+//		            }
+//		        }, 
+//		        10000 
+//		);
+		
+	}
 
 	public final void start(){
 
-		try	{
+		// TODO: all vertx config and launching is performed in the start() function.
+		// Set up hazelcast correctly
+		Config clusterConfig = new Config();
+		clusterConfig.getNetworkConfig().setPort(5000);
+		clusterConfig.getNetworkConfig().setPortAutoIncrement(true);
+		clusterConfig.getNetworkConfig().getInterfaces().setEnabled(true).addInterface(nodeIp);
+		ClusterManager mgr = new HazelcastClusterManager(clusterConfig);
 
-			// TODO: all vertx config and launching is performed in the start() function.
-			// Set up hazelcast correctly
-			Config clusterConfig = new Config();
-			clusterConfig.getNetworkConfig().setPort(5000);
-			clusterConfig.getNetworkConfig().setPortAutoIncrement(true);
-			clusterConfig.getNetworkConfig().getInterfaces().setEnabled(true).addInterface(nodeIp);
-			ClusterManager mgr = new HazelcastClusterManager(clusterConfig);
+		VertxOptions opts = new VertxOptions()
+				.setWorkerPoolSize(Runtime.getRuntime().availableProcessors())
+				.setClusterManager(mgr)
+				.setClusterHost(nodeIp);
 
-			VertxOptions opts = new VertxOptions()
-					.setWorkerPoolSize(Runtime.getRuntime().availableProcessors())
-					.setClusterManager(mgr)
-					.setClusterHost(nodeIp);
-
-			Handler<AsyncResult<Vertx>> resultHandler = new Handler<AsyncResult<Vertx>>(){
-				@Override
-				public void handle(AsyncResult<Vertx> asyncRes) {
+		Handler<AsyncResult<Vertx>> resultHandler = new Handler<AsyncResult<Vertx>>(){
+			@Override
+			public void handle(AsyncResult<Vertx> asyncRes) {
+				
+				vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
+					@Override
+					public void handle(Message<JsonObject> msg) {
+						
+						JsonObject whoStops = msg.body();
+						
+						if(whoStops.getString("nIpAddr") == nodeIp)
+							stop();
+						
+						else if(whoStops.getString("nIpAddr") == "ALL")
+							stop();
+					}});
 					
-					// TODO: We also need subscriptions to the KernelChannels.KERNEL channel to listen for the stop
-					// message. You can design this message any way you want: a string or small JsonObject.
-					
-					if(asyncRes.succeeded()){
-						System.out.println("Clustered vertx launched.");
-						Vertx vertx = asyncRes.result();
+				
+				if(asyncRes.succeeded()){
+					System.out.println("Clustered vertx launched.");
+					Vertx vertx = asyncRes.result();
 
-						// TODO: when successfully clustered, launch heartbeat verticle, resource verticle, task manager verticle...
-						vertx.deployVerticle(new ResourceManagerVerticle(nodeIp, 500, rootNode),
-								new Handler<AsyncResult<String>>(){
-							@Override
-							public void handle(AsyncResult<String> res) {
-								if(res.succeeded()){
-									System.out.println("Deployed ResourceManagerVerticle!");
-								}
+					vertx.deployVerticle(new ResourceManagerVerticle(nodeIp, 500, rootNode),
+							new Handler<AsyncResult<String>>(){
+						@Override
+						public void handle(AsyncResult<String> res) {
+							if(res.succeeded()){
+								System.out.println("Deployed ResourceManagerVerticle!");
 							}
-						});
+						}
+					});
 
-						vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod), 
-								new DeploymentOptions().setWorker(true), 
-								new Handler<AsyncResult<String>>(){
+					vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod), 
+							new DeploymentOptions().setWorker(true), 
+							new Handler<AsyncResult<String>>(){
 
-							@Override
-							public void handle(AsyncResult<String> res) {
-								if(res.succeeded()){
-									System.out.println("Deployed HeartBeatVerticle!");
-								}
+						@Override
+						public void handle(AsyncResult<String> res) {
+							if(res.succeeded()){
+								System.out.println("Deployed HeartBeatVerticle!");
 							}
-						});
+						}
+					});
 
-						vertx.deployVerticle(new RequestTestVerticle(),
-								new Handler<AsyncResult<String>>(){
-							@Override
-							public void handle(AsyncResult<String> res) {
-								if(res.succeeded()){
-									System.out.println("Deployed RequestTestVerticle!");
-								}
+					vertx.deployVerticle(new RequestTestVerticle(),
+							new Handler<AsyncResult<String>>(){
+						@Override
+						public void handle(AsyncResult<String> res) {
+							if(res.succeeded()){
+								System.out.println("Deployed RequestTestVerticle!");
 							}
-						});
+						}
+					});
 
 
-					}
 				}
-			};
-			Vertx.clusteredVertx(opts, resultHandler);
-
-			//After moving things to their proper places it seems
-			//this doesn't need to go here.
-//		} catch (IOException e) {
-//			System.err.println("ERROR: " + e.getMessage());
-//			System.exit(-1);
-		} 
+			}
+		};
+		Vertx.clusteredVertx(opts, resultHandler); 
 	}
 
-	// TODO: Yes, they are member functions. This is the correct location, but they depend on the vertx variable.
-	// See my testing class PhysiCloudFromClojure to see how I handle the Vertx variable.
-	//I am not sure if this is the correct place for these functions, but I am going to flesh out
-	//their functionality at least
-
 	public final void stop(){
+		//TODO Test it
+		
 		vertx.close(new Handler<AsyncResult<Void>>(){
 
 			@Override
@@ -159,69 +177,61 @@ public class PhysiCloudRuntime {
 				System.exit(0);
 			}
 
-		});
+		});}
 
 		public final void stop(String ipAddr){
-			//TODO Finish stop function
-			// TODO: This function sends the "poison pill" message that makes another
-			// CPU stop execution.
-
-			vertx.close(new Handler<AsyncResult<Void>>(){
-
-				@Override
-				public void handle(AsyncResult<Void> event) {
-					// TODO Auto-generated method stub
-					System.exit(0);
-				}
-
-			});}
+			//TODO Test it
+			
+			JsonObject onlySleepNow = new JsonObject();
+			onlySleepNow.put("nIpAddr", ipAddr);
+			vertx.eventBus().publish(KernelChannels.HEARTBEAT, onlySleepNow);
+		}
 
 		public final void stopAll(){			
-			//TODO implement stopAll function
-
-
+			//TODO Test it
+			
+			JsonObject onlySleepNow = new JsonObject();
+			onlySleepNow.put("nIpAddr", "ALL");
+			vertx.eventBus().publish(KernelChannels.HEARTBEAT, onlySleepNow);
 		}
 
-		public final PersistentHashMap getNeighborData(){
-			//TODO implement getNeighborData function
-			//Gets neighbor map and returns a PersistentHashMap (clojure object)
-
-			LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-
-			//I am unsure how to use the PersistentHashMap, as the API is not too helpful
-			PersistentHashMap nData = new PersistentHashMap(String, NeighborData);
-			return
-
-
-		}
+//		public final PersistentHashMap getNeighborData(){
+//			//TODO implement getNeighborData function
+//			//Gets neighbor map and returns a PersistentHashMap (clojure object)
+//
+//			LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+//
+//			
+//			PersistentHashMap nData = new PersistentHashMap(0, null, false, nData);
+//			return nData;
+//		}
 
 		public final boolean isResourceAvailable(String resource){
-			//Potentially finished
-
-			LocalMap<Integer,String> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-			ArrayList<String> deviceNames = new ArrayList<String>(vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES).values());
-			outerloop:
-				for(String deviceName : deviceNames){
-
-					for(Object key : vertx.sharedData().getLocalMap(deviceName).keySet()){
-
-						if(((String) key).compareTo(resource) == 0){
-							return true;
-						}
-					}
+				
+			LocalMap<Integer,String> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
+			
+			for(int i = 0; i < neighborMap.size(); i++){
+	
+				for(Object key : vertx.sharedData().getLocalMap(neighborMap.get(i)).keySet()){
+					if(key == resource)
+						return true;
 				}
-			return false;
-
-
+			}
+			
+			return false;		
 		}
+		
+		public final void deployFunction(final String fnName, final String fn, long updatePeriod){
+			
+			vertx.deployVerticle(new DynamicVerticle(fnName, fn, updatePeriod), 
+					result -> {
+						if(result.succeeded()){
+							System.out.println(" DynamicVerticle " + fnName + " deployed!");
+						}
+					});
+			
+			vertx.eventBus().consumer(fnName, msg -> { System.out.println(msg.body()); });
+			
+		}	
+		
 	}
-
-
-
-
-
-
-
-
-}
-
