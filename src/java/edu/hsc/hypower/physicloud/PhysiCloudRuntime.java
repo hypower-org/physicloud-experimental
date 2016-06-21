@@ -32,16 +32,26 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
  * @author pmartin@hsc.edu
  *         hackleyb18@hsc.edu
  */
-public class PhysiCloudRuntime(String configfileName) {
-	
-}
+// TODO: You need to declare classes correctly!
+public class PhysiCloudRuntime {
 
-		public final void start(){
-			
-			ObjectMapper mapper = new ObjectMapper();
-			
-			JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));		
-			
+	// TODO: The member variables of the class need to be here...
+	
+	// 1 - The vertx object
+	// 2 - All of the results from parsing the config file: nodeIp, etc. Make them private member variables.
+	// 3 - Any other information we may want hold onto in the core of the runtime.
+	
+	// TODO: Now make the constructor...
+	public PhysiCloudRuntime(String configFileName){
+
+	}
+
+	public final void start(){
+		// TODO: all of this Json stuff moves to the constructor...
+		ObjectMapper mapper = new ObjectMapper();
+
+		JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));		
+
 		try	{
 
 
@@ -57,13 +67,14 @@ public class PhysiCloudRuntime(String configfileName) {
 			long heartBeatPeriod = rootNode.get("heartBeatPeriod").asLong();						// retrieve heart beat period
 			System.out.println("Sensor node heart beat period: " + heartBeatPeriod);
 
+			// TODO: all vertx config and launching is performed in the start() function.
 			// Set up hazelcast correctly
 			Config clusterConfig = new Config();
 			clusterConfig.getNetworkConfig().setPort(5000);
 			clusterConfig.getNetworkConfig().setPortAutoIncrement(true);
 			clusterConfig.getNetworkConfig().getInterfaces().setEnabled(true).addInterface(nodeIp);
 			ClusterManager mgr = new HazelcastClusterManager(clusterConfig);
-			
+
 			VertxOptions opts = new VertxOptions()
 					.setWorkerPoolSize(Runtime.getRuntime().availableProcessors())
 					.setClusterManager(mgr)
@@ -72,6 +83,10 @@ public class PhysiCloudRuntime(String configfileName) {
 			Handler<AsyncResult<Vertx>> resultHandler = new Handler<AsyncResult<Vertx>>(){
 				@Override
 				public void handle(AsyncResult<Vertx> asyncRes) {
+					
+					// TODO: We also need subscriptions to the KernelChannels.KERNEL channel to listen for the stop
+					// message. You can design this message any way you want: a string or small JsonObject.
+					
 					if(asyncRes.succeeded()){
 						System.out.println("Clustered vertx launched.");
 						Vertx vertx = asyncRes.result();
@@ -79,12 +94,12 @@ public class PhysiCloudRuntime(String configfileName) {
 						// TODO: when successfully clustered, launch heartbeat verticle, resource verticle, task manager verticle...
 						vertx.deployVerticle(new ResourceManagerVerticle(nodeIp, 500, rootNode),
 								new Handler<AsyncResult<String>>(){
-									@Override
-									public void handle(AsyncResult<String> res) {
-										if(res.succeeded()){
-											System.out.println("Deployed ResourceManagerVerticle!");
-										}
-									}
+							@Override
+							public void handle(AsyncResult<String> res) {
+								if(res.succeeded()){
+									System.out.println("Deployed ResourceManagerVerticle!");
+								}
+							}
 						});
 
 						vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod), 
@@ -98,9 +113,9 @@ public class PhysiCloudRuntime(String configfileName) {
 								}
 							}
 						});
-						
+
 						vertx.deployVerticle(new RequestTestVerticle(),
-						new Handler<AsyncResult<String>>(){
+								new Handler<AsyncResult<String>>(){
 							@Override
 							public void handle(AsyncResult<String> res) {
 								if(res.succeeded()){
@@ -108,8 +123,8 @@ public class PhysiCloudRuntime(String configfileName) {
 								}
 							}
 						});
-						
-				
+
+
 					}
 				}
 			};
@@ -123,10 +138,12 @@ public class PhysiCloudRuntime(String configfileName) {
 			System.exit(-1);
 		} 
 	}
-	
+
+	// TODO: Yes, they are member functions. This is the correct location, but they depend on the vertx variable.
+	// See my testing class PhysiCloudFromClojure to see how I handle the Vertx variable.
 	//I am not sure if this is the correct place for these functions, but I am going to flesh out
 	//their functionality at least
-	
+
 	public final void stop(){
 		vertx.close(new Handler<AsyncResult<Void>>(){
 
@@ -135,12 +152,14 @@ public class PhysiCloudRuntime(String configfileName) {
 				System.err.println("PhysiCloud stopped.");
 				System.exit(0);
 			}
-			
+
 		});
-		
+
 		public final void stop(String ipAddr){
 			//TODO Finish stop function
-			
+			// TODO: This function sends the "poison pill" message that makes another
+			// CPU stop execution.
+
 			vertx.close(new Handler<AsyncResult<Void>>(){
 
 				@Override
@@ -148,51 +167,55 @@ public class PhysiCloudRuntime(String configfileName) {
 					// TODO Auto-generated method stub
 					System.exit(0);
 				}
-				
+
 			});}
-			
-			public final void stopAll(){			
-				//TODO implement stopAll function
-		
-					
-				}
-				
-			public final PersistentHashMap getNeighborData(){
-				//TODO implement getNeighborData function
-				//Gets neighbor map and returns a PersistentHashMap (clojure object)
-				
-				LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-				
-				//I am unsure how to use the PersistentHashMap, as the API is not too helpful
-				PersistentHashMap nData = new PersistentHashMap(String, NeighborData);
-				return
-			
-				
-			}
-			
-			public final boolean isResourceAvailable(String resource){
-				//Potentially finished
-				
-				LocalMap<Integer,String> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
-				ArrayList<String> deviceNames = new ArrayList<String>(vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES).values());
-				outerloop:
+
+		public final void stopAll(){			
+			//TODO implement stopAll function
+
+
+		}
+
+		public final PersistentHashMap getNeighborData(){
+			//TODO implement getNeighborData function
+			//Gets neighbor map and returns a PersistentHashMap (clojure object)
+
+			LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+
+			//I am unsure how to use the PersistentHashMap, as the API is not too helpful
+			PersistentHashMap nData = new PersistentHashMap(String, NeighborData);
+			return
+
+
+		}
+
+		public final boolean isResourceAvailable(String resource){
+			//Potentially finished
+
+			LocalMap<Integer,String> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+			ArrayList<String> deviceNames = new ArrayList<String>(vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES).values());
+			outerloop:
 				for(String deviceName : deviceNames){
-					
+
 					for(Object key : vertx.sharedData().getLocalMap(deviceName).keySet()){
-						
+
 						if(((String) key).compareTo(resource) == 0){
 							return true;
 						}
 					}
 				}
-				return false;
-			
-		
-			}
-		}
-				
-			
-		
-	
+			return false;
 
+
+		}
+	}
+
+
+
+
+
+
+
+
+}
 
