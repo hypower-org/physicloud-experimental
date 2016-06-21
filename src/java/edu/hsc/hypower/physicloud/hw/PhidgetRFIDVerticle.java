@@ -1,6 +1,9 @@
 package edu.hsc.hypower.physicloud.hw;
 
 import io.vertx.core.AbstractVerticle;
+
+import java.util.ArrayList;
+
 import com.phidgets.*;
 import com.phidgets.event.AttachEvent;
 import com.phidgets.event.AttachListener;
@@ -12,11 +15,16 @@ import com.phidgets.event.TagLossListener;
 public class PhidgetRFIDVerticle extends AbstractVerticle {
 
 	private RFIDPhidget rfid;
+	private ArrayList<String> tagList;
+	private ArrayList<String> correctKeys;
 
 
 	@Override
 	public void start() throws Exception {
 		super.start();
+
+		correctKeys.add("1000e0a20a");		
+
 		try{
 			rfid = new RFIDPhidget();
 			rfid.addAttachListener(new AttachListener() {
@@ -34,13 +42,16 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 		{
 			public void tagGained(TagGainEvent oe)
 			{
-				if(oe.getValue() == "1000e0a20a")//This is the ID of one of the white cards 
+				for(String s : correctKeys)
 				{
-					System.out.println("Menu Unlocked");
-				}
-				else
-					System.out.println("Improper RFID Tag");
+					if(oe.getValue() == s)   //This is the ID of one of the white cards 
+					{
+						System.out.println("Menu Unlocked");
+					}
+					else
+						System.out.println("Improper RFID Tag");
 
+				}
 			}
 		});
 

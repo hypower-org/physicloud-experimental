@@ -51,14 +51,9 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 
 	public final void updateSensorData(Long l) {
 
-		// Are these maps alright? or would we rather have a list for each sensor value?
 
 		LocalMap<Double, Double> latLongMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.LAT_LONG);
-		LocalMap<Double, Double> altVelMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ALT_VEL);
-
-		// This almost seems too simple, but because of the simple "getter" functions provided by the library I think it is all we need
-		// Do we need to incorporate the GPSPositionChangeListener?
-		
+		LocalMap<Double, Double> altVelMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ALT_VEL);		
 
 		GPSPositionChangeListener GPSPositionChangeListener = null;
 		gps.addGPSPositionChangeListener(GPSPositionChangeListener);
