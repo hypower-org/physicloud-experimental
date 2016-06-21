@@ -38,34 +38,41 @@ public class PhysiCloudRuntime {
 	// TODO: The member variables of the class need to be here...
 	
 	// 1 - The vertx object
+	private Vertx vertx;
 	// 2 - All of the results from parsing the config file: nodeIp, etc. Make them private member variables.
+	
+	private String nodeIp;
+	
+	private String deviceLocation;
+	
+	private String secCode;
+	
+	private long heartBeatPeriod;
+	
 	// 3 - Any other information we may want hold onto in the core of the runtime.
 	
 	// TODO: Now make the constructor...
-	public PhysiCloudRuntime(String configFileName){
+	public PhysiCloudRuntime(String configFileName) throws JsonProcessingException, IOException{
+		ObjectMapper mapper = new ObjectMapper();
 
+		JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));
+		
+		String nodeIp = rootNode.get("IP").asText();											// retrieve IP	
+		System.out.println("Sensor node IP Address: " + nodeIp);
+
+		String deviceLocation = rootNode.get("Location").asText();								// retrieve location
+		System.out.println("Sensor node location: " + deviceLocation);
+
+		String secCode = rootNode.get("securityCode").asText();									// retrieve security code
+		System.out.println("Sensor node security code: " + secCode);
+
+		long heartBeatPeriod = rootNode.get("heartBeatPeriod").asLong();						// retrieve heart beat period
+		System.out.println("Sensor node heart beat period: " + heartBeatPeriod);
 	}
 
 	public final void start(){
-		// TODO: all of this Json stuff moves to the constructor...
-		ObjectMapper mapper = new ObjectMapper();
-
-		JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));		
 
 		try	{
-
-
-			String nodeIp = rootNode.get("IP").asText();											// retrieve IP	
-			System.out.println("Sensor node IP Address: " + nodeIp);
-
-			String deviceLocation = rootNode.get("Location").asText();								// retrieve location
-			System.out.println("Sensor node location: " + deviceLocation);
-
-			String secCode = rootNode.get("securityCode").asText();									// retrieve security code
-			System.out.println("Sensor node security code: " + secCode);
-
-			long heartBeatPeriod = rootNode.get("heartBeatPeriod").asLong();						// retrieve heart beat period
-			System.out.println("Sensor node heart beat period: " + heartBeatPeriod);
 
 			// TODO: all vertx config and launching is performed in the start() function.
 			// Set up hazelcast correctly
@@ -130,12 +137,11 @@ public class PhysiCloudRuntime {
 			};
 			Vertx.clusteredVertx(opts, resultHandler);
 
-		} catch (JsonProcessingException e) {
-			System.err.println("JSON ERROR: " + e.getMessage());
-			System.exit(-1);
-		} catch (IOException e) {
-			System.err.println("ERROR: " + e.getMessage());
-			System.exit(-1);
+			//After moving things to their proper places it seems
+			//this doesn't need to go here.
+//		} catch (IOException e) {
+//			System.err.println("ERROR: " + e.getMessage());
+//			System.exit(-1);
 		} 
 	}
 
