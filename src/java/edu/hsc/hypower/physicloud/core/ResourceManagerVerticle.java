@@ -168,7 +168,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			}
 		}
 
-		// TODO: Guys, we made kernel channel names. Use these to maintain consistency.
 		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.READ_REQUEST, this::handleRequest);
 	}
 
@@ -249,6 +248,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 	@Override
 	public void stop() throws Exception {
+		System.out.println(this.getClass().getSimpleName() + " stopping.");
 		super.stop();
 	}
 

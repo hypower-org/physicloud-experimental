@@ -40,7 +40,7 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 public class PhysiCloudRuntime {
 
 
-	private Vertx vertx;
+	private Vertx vertxHook;
 	private JsonNode rootNode;
 	private String nodeIp;
 	private String deviceLocation;
@@ -54,16 +54,18 @@ public class PhysiCloudRuntime {
 
 		JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));
 
-		String nodeIp = rootNode.get("IP").asText();											// retrieve IP	
+		// TODO: You did not assign the values to the member variables...(see line 96)
+		// retrieve IP
+		nodeIp = rootNode.get("IP").asText();
 		System.out.println("Sensor node IP Address: " + nodeIp);
-
-		String deviceLocation = rootNode.get("Location").asText();								// retrieve location
+		// retrieve location
+		deviceLocation = rootNode.get("Location").asText();
 		System.out.println("Sensor node location: " + deviceLocation);
-
-		String secCode = rootNode.get("securityCode").asText();									// retrieve security code
+		// retrieve security code
+		secCode = rootNode.get("securityCode").asText();
 		System.out.println("Sensor node security code: " + secCode);
-
-		long heartBeatPeriod = rootNode.get("heartBeatPeriod").asLong();						// retrieve heart beat period
+		// retrieve heart beat period
+		heartBeatPeriod = rootNode.get("heartBeatPeriod").asLong();
 		System.out.println("Sensor node heart beat period: " + heartBeatPeriod);
 	}
 
@@ -73,25 +75,25 @@ public class PhysiCloudRuntime {
 		PhysiCloudRuntime test = new PhysiCloudRuntime(args[0]);
 
 		test.start();
-		//		new java.util.Timer().schedule( 
-		//		        new java.util.TimerTask() {
-		//		            @Override
-		//		            public void run() {
-		//		                test.stop();
-		//		            }
-		//		        }, 
-		//		        10000 
-		//		);
+
+		// TODO: Just do a Thread.sleep() 
+		try {
+
+			Thread.sleep(10000);
+			test.stop();
+
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
 	}
 
 	public final void start(){
 
-		// TODO: all vertx config and launching is performed in the start() function.
-		// Set up hazelcast correctly
 		Config clusterConfig = new Config();
 		clusterConfig.getNetworkConfig().setPort(5000);
 		clusterConfig.getNetworkConfig().setPortAutoIncrement(true);
+		// TODO: ...so you are passing an initialized value here!
 		clusterConfig.getNetworkConfig().getInterfaces().setEnabled(true).addInterface(nodeIp);
 		ClusterManager mgr = new HazelcastClusterManager(clusterConfig);
 
@@ -104,25 +106,31 @@ public class PhysiCloudRuntime {
 			@Override
 			public void handle(AsyncResult<Vertx> asyncRes) {
 
-				vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
-					@Override
-					public void handle(Message<JsonObject> msg) {
-
-						JsonObject whoStops = msg.body();
-
-						if(whoStops.getString("nIpAddr") == nodeIp)
-							stop();
-
-						else if(whoStops.getString("nIpAddr") == "ALL")
-							stop();
-					}});
-
-
 				if(asyncRes.succeeded()){
 					System.out.println("Clustered vertx launched.");
-					Vertx vertx = asyncRes.result();
+					// TODO: Need to assign!
+					vertxHook = asyncRes.result();
 
-					vertx.deployVerticle(new ResourceManagerVerticle(nodeIp, 500, rootNode),
+					vertxHook.eventBus().consumer(KernelChannels.KERNEL, new Handler<Message<JsonObject>>(){
+						@Override
+						public void handle(Message<JsonObject> msg) {
+
+							System.out.println("Received a stop message!");
+							JsonObject whoStops = msg.body();
+
+							// TODO: I tested via clojure and the message is received but it does not stop. Check your
+							// logic.
+							if(whoStops.getString("nIpAddr") == nodeIp)
+								stop();
+
+							else if(whoStops.getString("nIpAddr") == "ALL")
+								stop();
+						}
+					});
+
+
+
+					vertxHook.deployVerticle(new ResourceManagerVerticle(nodeIp, 500, rootNode),
 							new Handler<AsyncResult<String>>(){
 						@Override
 						public void handle(AsyncResult<String> res) {
@@ -132,7 +140,7 @@ public class PhysiCloudRuntime {
 						}
 					});
 
-					vertx.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod), 
+					vertxHook.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod), 
 							new DeploymentOptions().setWorker(true), 
 							new Handler<AsyncResult<String>>(){
 
@@ -144,7 +152,7 @@ public class PhysiCloudRuntime {
 						}
 					});
 
-					vertx.deployVerticle(new RequestTestVerticle(),
+					vertxHook.deployVerticle(new RequestTestVerticle(),
 							new Handler<AsyncResult<String>>(){
 						@Override
 						public void handle(AsyncResult<String> res) {
@@ -164,7 +172,7 @@ public class PhysiCloudRuntime {
 	public final void stop(){
 		//TODO Test it
 
-		vertx.close(new Handler<AsyncResult<Void>>(){
+		vertxHook.close(new Handler<AsyncResult<Void>>(){
 
 			@Override
 			public void handle(AsyncResult<Void> event) {
@@ -179,7 +187,9 @@ public class PhysiCloudRuntime {
 
 		JsonObject onlySleepNow = new JsonObject();
 		onlySleepNow.put("nIpAddr", ipAddr);
-		vertx.eventBus().publish(KernelChannels.HEARTBEAT, onlySleepNow);
+		// TODO: Don't send on the HB channel - send it on KERNEL...you will cause
+		// issues with the HeartBeatVerticle if you send another type of message!
+		vertxHook.eventBus().publish(KernelChannels.KERNEL, onlySleepNow);
 	}
 
 	public final void stopAll(){			
@@ -187,7 +197,7 @@ public class PhysiCloudRuntime {
 
 		JsonObject onlySleepNow = new JsonObject();
 		onlySleepNow.put("nIpAddr", "ALL");
-		vertx.eventBus().publish(KernelChannels.HEARTBEAT, onlySleepNow);
+		vertxHook.eventBus().publish(KernelChannels.HEARTBEAT, onlySleepNow);
 	}
 
 	//		public final PersistentHashMap getNeighborData(){
@@ -203,11 +213,11 @@ public class PhysiCloudRuntime {
 
 	public final boolean isResourceAvailable(String resource){
 
-		LocalMap<Integer,String> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
+		LocalMap<Integer,String> neighborMap = vertxHook.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
 
 		for(int i = 0; i < neighborMap.size(); i++){
 
-			for(Object key : vertx.sharedData().getLocalMap(neighborMap.get(i)).keySet()){
+			for(Object key : vertxHook.sharedData().getLocalMap(neighborMap.get(i)).keySet()){
 				if(key == resource)
 					return true;
 			}
@@ -218,14 +228,14 @@ public class PhysiCloudRuntime {
 
 	public final void deployFunction(final String fnName, final String fn, long updatePeriod){
 
-		vertx.deployVerticle(new DynamicVerticle(fnName, fn, updatePeriod), 
+		vertxHook.deployVerticle(new DynamicVerticle(fnName, fn, updatePeriod), 
 				result -> {
 					if(result.succeeded()){
 						System.out.println(" DynamicVerticle " + fnName + " deployed!");
 					}
 				});
 
-		vertx.eventBus().consumer(fnName, msg -> { System.out.println(msg.body()); });
+		vertxHook.eventBus().consumer(fnName, msg -> { System.out.println(msg.body()); });
 
 	}	
 

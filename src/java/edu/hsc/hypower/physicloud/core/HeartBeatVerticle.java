@@ -124,6 +124,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 	@Override
 	public void stop() throws Exception {
+		System.out.println(this.getClass().getSimpleName() + " stopping.");
 		super.stop();
 	}
 	
