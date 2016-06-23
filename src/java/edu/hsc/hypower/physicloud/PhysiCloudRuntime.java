@@ -35,6 +35,7 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
  * The new PhysiCloud launching class.
  * @author pmartin@hsc.edu
  *         hackleyb18@hsc.edu
+ *         kangask18@hsc.edu
  */
 
 public class PhysiCloudRuntime {
@@ -75,17 +76,24 @@ public class PhysiCloudRuntime {
 		PhysiCloudRuntime test = new PhysiCloudRuntime(args[0]);
 
 		test.start();
-
-		// TODO: Just do a Thread.sleep() 
-		try {
-
-			Thread.sleep(10000);
-			test.stop();
-
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
+		
+		new java.util.Timer().schedule( 
+		        new java.util.TimerTask() {
+		            @Override
+		            public void run() {
+		            	Boolean isRes =   test.isResourceAvailable("temp.0");
+		            	if(isRes == true)
+		            		System.out.println("Resource available!");
+		            	else
+		            		System.out.println("Resource unavailable :(");
+		        
+		            	test.stopAll();
+		            }
+		        }, 
+		        10000
+		);
+		
+		
 	}
 
 	public final void start(){
@@ -134,7 +142,7 @@ public class PhysiCloudRuntime {
 							new Handler<AsyncResult<String>>(){
 						@Override
 						public void handle(AsyncResult<String> res) {
-							if(res.succeeded()){
+										if(res.succeeded()){
 								System.out.println("Deployed ResourceManagerVerticle!");
 							}
 						}
@@ -168,36 +176,30 @@ public class PhysiCloudRuntime {
 		};
 		Vertx.clusteredVertx(opts, resultHandler); 
 	}
+	
 
+	
+	
 	public final void stop(){
-		//TODO Test it
-
-		vertxHook.close(new Handler<AsyncResult<Void>>(){
-
-			@Override
-			public void handle(AsyncResult<Void> event) {
-				System.err.println("PhysiCloud stopped.");
-				System.exit(0);
+	
+		vertxHook.close();
+		
 			}
-
-		});}
 
 	public final void stop(String ipAddr){
 		//TODO Test it
 
 		JsonObject onlySleepNow = new JsonObject();
 		onlySleepNow.put("nIpAddr", ipAddr);
-		// TODO: Don't send on the HB channel - send it on KERNEL...you will cause
-		// issues with the HeartBeatVerticle if you send another type of message!
+
 		vertxHook.eventBus().publish(KernelChannels.KERNEL, onlySleepNow);
 	}
 
 	public final void stopAll(){			
-		//TODO Test it
 
 		JsonObject onlySleepNow = new JsonObject();
 		onlySleepNow.put("nIpAddr", "ALL");
-		vertxHook.eventBus().publish(KernelChannels.HEARTBEAT, onlySleepNow);
+		vertxHook.eventBus().publish(KernelChannels.KERNEL, onlySleepNow);
 	}
 
 	//		public final PersistentHashMap getNeighborData(){
@@ -225,6 +227,9 @@ public class PhysiCloudRuntime {
 
 		return false;		
 	}
+	
+	
+	
 
 	public final void deployFunction(final String fnName, final String fn, long updatePeriod){
 
