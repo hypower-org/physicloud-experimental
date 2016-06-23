@@ -42,6 +42,9 @@ public class RequestTestVerticle extends AbstractVerticle {
 		Set<String> ipSet = neighborMap.keySet();
 
 		reqMsg.put("Requested Resource", "temperature.0");
+		reqMsg.put(JsonFieldNames.UPDATE_TIME, 100);
+		reqMsg.put(JsonFieldNames.IP_ADDR, "?");
+		//TODO How do I get the IP address of the current node?
 
 		for(String s : ipSet){
 			vertx.eventBus().send(s + "." + KernelChannels.READ_REQUEST, reqMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
@@ -65,10 +68,19 @@ public class RequestTestVerticle extends AbstractVerticle {
 
 					}}});
 		}
-
-
-
-
+		
+		//This handles the setPeriodic that sends the data in the ResourceManager
+		vertx.eventBus().consumer("reqRes.@" + localIp, new Handler<Message<JsonObject>>() {
+			
+			
+			public void handle(Message<JsonObject> msg){
+				JsonObject data = msg.body();
+				
+				System.out.println("Value of data: " + data.getString("Data"));
+			}
+			
+		});
+		
 	}
 
 }
