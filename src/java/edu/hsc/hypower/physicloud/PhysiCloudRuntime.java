@@ -50,7 +50,7 @@ public class PhysiCloudRuntime {
 	private static final String STOP = "isTimeToStop";
 	private static final String IPADDR = "ipAddr";
 	private static final String ALL = "*";
-
+	
 	public PhysiCloudRuntime(String configFileName) throws JsonProcessingException, IOException{
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -160,7 +160,7 @@ public class PhysiCloudRuntime {
 						}
 					});
 
-					vertxHook.deployVerticle(new RequestTestVerticle(),
+					vertxHook.deployVerticle(new RequestTestVerticle(nodeIp),
 							new Handler<AsyncResult<String>>(){
 						@Override
 						public void handle(AsyncResult<String> res) {
@@ -207,14 +207,14 @@ public class PhysiCloudRuntime {
 	//			return nData;
 	//		}
 
-	public final boolean isResourceAvailable(String resource){
+	public final boolean isResourceAvailable(final String resourceName){
 
 		LocalMap<Integer,String> neighborMap = vertxHook.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
 
 		for(int i = 0; i < neighborMap.size(); i++){
 
 			for(Object key : vertxHook.sharedData().getLocalMap(neighborMap.get(i)).keySet()){
-				if(key == resource)
+				if(key == resourceName)
 					return true;
 			}
 		}
@@ -222,9 +222,10 @@ public class PhysiCloudRuntime {
 		return false;		
 	}
 
-
-
-
+	public final void subscribeToResource(final String resourceName){
+		// TODO: for dynamic testing in clojure - may not be part of the final API.
+	}
+	
 	public final void deployFunction(final String fnName, final String fn, long updatePeriod){
 
 		vertxHook.deployVerticle(new DynamicVerticle(fnName, fn, updatePeriod), 

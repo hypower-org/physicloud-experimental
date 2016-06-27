@@ -22,6 +22,12 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
 
 public class RequestTestVerticle extends AbstractVerticle {
 
+	private final String ipAddr;
+	
+	public RequestTestVerticle(String ip){
+		ipAddr = ip;
+	}
+	
 	@Override
 	public void start() throws Exception {
 		super.start();
@@ -45,9 +51,10 @@ public class RequestTestVerticle extends AbstractVerticle {
 		reqMsg.put(JsonFieldNames.UPDATE_TIME, 100);
 		reqMsg.put(JsonFieldNames.IP_ADDR, "?");
 		//TODO How do I get the IP address of the current node?
+		// PJM: it needs to passed into the Verticle via the constructor...see above!
 
 		for(String s : ipSet){
-			vertx.eventBus().send(s + "." + KernelChannels.READ_REQUEST, reqMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
+			vertx.eventBus().send(s + "." + KernelChannels.RESOURCE_QUERY, reqMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 
 				public void handle(AsyncResult<Message<JsonObject>> msg){	

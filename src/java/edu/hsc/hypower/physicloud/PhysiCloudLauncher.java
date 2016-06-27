@@ -97,7 +97,7 @@ public class PhysiCloudLauncher {
 							}
 						});
 						
-						vertx.deployVerticle(new RequestTestVerticle(),
+						vertx.deployVerticle(new RequestTestVerticle(nodeIp),
 						new Handler<AsyncResult<String>>(){
 							@Override
 							public void handle(AsyncResult<String> res) {

@@ -45,6 +45,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 	private final long updatePeriod;
 	private final String ipAddress;
+	
+	private final static long MIN_RESOURCE_UPDATE = 10; // 10 ms; in the future might need to be dynamic based on traffic.
 
 	public ResourceManagerVerticle(String ipAddr, long up, JsonNode node){
 		ipAddress = ipAddr;
@@ -168,13 +170,11 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			}
 		}
 
-		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.READ_REQUEST, this::handleRequest);
+		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.RESOURCE_QUERY, this::handleResourceQuery);
 	}
 
-	// TODO: flesh out this functionality!
-	private final void handleRequest(Message<JsonObject> msg){
+	private final void handleResourceQuery(Message<JsonObject> msg){
 
-		System.out.println("Request Receieved");
 		JsonObject request = msg.body();
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
 		String reqInfo = request.getString("Requested Resource");	
@@ -189,7 +189,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
 		outerloop:
 		for(String deviceName : deviceNames){
-			
 			// We operate under the assumption that the keys are strings...
 			for(Object key : vertx.sharedData().getLocalMap(deviceName).keySet()){
 				
@@ -205,11 +204,11 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		System.out.println(infoReply.encodePrettily());
 		msg.reply(infoReply);
 
-		//This output statement is only valid for the test case of memory being the requested resource
-		//We need to figure out a way to output various data types
-		//		System.out.println("Value of Requested Resource: " + infoReply.getLong("Requested Value"));
-		System.out.println("Reply Sent!");		
-
+	}
+	
+	// TODO: Implement!
+	private final void handleReadRequest(Message<JsonObject> readReqMsg){
+		
 	}
 
 	@Override
