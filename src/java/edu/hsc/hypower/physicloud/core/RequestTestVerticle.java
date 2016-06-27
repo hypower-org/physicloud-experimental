@@ -70,16 +70,16 @@ public class RequestTestVerticle extends AbstractVerticle {
 		}
 		
 		//This handles the setPeriodic that sends the data in the ResourceManager
-		vertx.eventBus().consumer("reqRes.@" + localIp, new Handler<Message<JsonObject>>() {
-			
-			
-			public void handle(Message<JsonObject> msg){
-				JsonObject data = msg.body();
-				
-				System.out.println("Value of data: " + data.getString("Data"));
-			}
-			
-		});
+//		vertx.eventBus().consumer("reqRes.@" + localIp, new Handler<Message<JsonObject>>() {
+//			
+//			
+//			public void handle(Message<JsonObject> msg){
+//				JsonObject data = msg.body();
+//				
+//				System.out.println("Value of data: " + data.getString("Data"));
+//			}
+//			
+//		});
 		
 	}
 

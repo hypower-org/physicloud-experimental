@@ -40,22 +40,22 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 public class PhysiCloudRuntime {
 
-
 	private Vertx vertxHook;
 	private JsonNode rootNode;
 	private String nodeIp;
 	private String deviceLocation;
 	private String secCode;
 	private long heartBeatPeriod;
-
-	// 3 - Any other information we may want hold onto in the core of the runtime.
+	
+	private static final String STOP = "isTimeToStop";
+	private static final String IPADDR = "ipAddr";
+	private static final String ALL = "*";
 
 	public PhysiCloudRuntime(String configFileName) throws JsonProcessingException, IOException{
 		ObjectMapper mapper = new ObjectMapper();
 
 		JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));
 
-		// TODO: You did not assign the values to the member variables...(see line 96)
 		// retrieve IP
 		nodeIp = rootNode.get("IP").asText();
 		System.out.println("Sensor node IP Address: " + nodeIp);
@@ -71,37 +71,36 @@ public class PhysiCloudRuntime {
 	}
 
 
-//	public static void main(String[] args) throws JsonProcessingException, IOException {
-//
-//		PhysiCloudRuntime test = new PhysiCloudRuntime(args[0]);
-//
-//		test.start();
-//		
-//		new java.util.Timer().schedule( 
-//		        new java.util.TimerTask() {
-//		            @Override
-//		            public void run() {
-//		            	Boolean isRes =   test.isResourceAvailable("temp.0");
-//		            	if(isRes == true)
-//		            		System.out.println("Resource available!");
-//		            	else
-//		            		System.out.println("Resource unavailable :(");
-//		        
-//		            	test.stopAll();
-//		            }
-//		        }, 
-//		        10000
-//		);
-//		
-//		
-//	}
+	//	public static void main(String[] args) throws JsonProcessingException, IOException {
+	//
+	//		PhysiCloudRuntime test = new PhysiCloudRuntime(args[0]);
+	//
+	//		test.start();
+	//		
+	//		new java.util.Timer().schedule( 
+	//		        new java.util.TimerTask() {
+	//		            @Override
+	//		            public void run() {
+	//		            	Boolean isRes =   test.isResourceAvailable("temp.0");
+	//		            	if(isRes == true)
+	//		            		System.out.println("Resource available!");
+	//		            	else
+	//		            		System.out.println("Resource unavailable :(");
+	//		        
+	//		            	test.stopAll();
+	//		            }
+	//		        }, 
+	//		        10000
+	//		);
+	//		
+	//		
+	//	}
 
 	public final void start(){
 
 		Config clusterConfig = new Config();
 		clusterConfig.getNetworkConfig().setPort(5000);
 		clusterConfig.getNetworkConfig().setPortAutoIncrement(true);
-		// TODO: ...so you are passing an initialized value here!
 		clusterConfig.getNetworkConfig().getInterfaces().setEnabled(true).addInterface(nodeIp);
 		ClusterManager mgr = new HazelcastClusterManager(clusterConfig);
 
@@ -116,33 +115,34 @@ public class PhysiCloudRuntime {
 
 				if(asyncRes.succeeded()){
 					System.out.println("Clustered vertx launched.");
-					// TODO: Need to assign!
 					vertxHook = asyncRes.result();
 
 					vertxHook.eventBus().consumer(KernelChannels.KERNEL, new Handler<Message<JsonObject>>(){
 						@Override
 						public void handle(Message<JsonObject> msg) {
-
 							System.out.println("Received a stop message!");
-							JsonObject whoStops = msg.body();
-
-							// TODO: I tested via clojure and the message is received but it does not stop. Check your
-							// logic.
-							if(whoStops.getString("nIpAddr") == nodeIp)
+							JsonObject incomingStopMsg = msg.body();
+							
+							// If the IP is the same, or it is the ALL message; AND it is a STOP.
+							if((incomingStopMsg.getString(IPADDR).equals(nodeIp) || incomingStopMsg.getString(IPADDR).equals(ALL))
+									&& incomingStopMsg.getBoolean(STOP)){
 								stop();
-
-							else if(whoStops.getString("nIpAddr") == "ALL")
-								stop();
+							}
+							
+							// TODO: == checks if the reference is the same, not if the value is the same!
+//							if(incomingStopMsg.getString("nIpAddr") == nodeIp)
+//								stop();
+//
+//							else if(incomingStopMsg.getString("nIpAddr") == "ALL")
+//								stop();
 						}
 					});
-
-
 
 					vertxHook.deployVerticle(new ResourceManagerVerticle(nodeIp, 500, rootNode),
 							new Handler<AsyncResult<String>>(){
 						@Override
 						public void handle(AsyncResult<String> res) {
-										if(res.succeeded()){
+							if(res.succeeded()){
 								System.out.println("Deployed ResourceManagerVerticle!");
 							}
 						}
@@ -176,30 +176,24 @@ public class PhysiCloudRuntime {
 		};
 		Vertx.clusteredVertx(opts, resultHandler); 
 	}
-	
 
-	
-	
 	public final void stop(){
-	
 		vertxHook.close();
-		
-			}
+	}
 
+	// Changed the stop protocol.
 	public final void stop(String ipAddr){
-		//TODO Test it
-
-		JsonObject onlySleepNow = new JsonObject();
-		onlySleepNow.put("nIpAddr", ipAddr);
-
-		vertxHook.eventBus().publish(KernelChannels.KERNEL, onlySleepNow);
+		JsonObject stopMsg = new JsonObject();
+		stopMsg.put(STOP, true);
+		stopMsg.put(IPADDR, ipAddr);
+		vertxHook.eventBus().publish(KernelChannels.KERNEL, stopMsg);
 	}
 
 	public final void stopAll(){			
-
-		JsonObject onlySleepNow = new JsonObject();
-		onlySleepNow.put("nIpAddr", "ALL");
-		vertxHook.eventBus().publish(KernelChannels.KERNEL, onlySleepNow);
+		JsonObject stopAllMsg = new JsonObject();
+		stopAllMsg.put(STOP, true);
+		stopAllMsg.put(IPADDR, ALL);
+		vertxHook.eventBus().publish(KernelChannels.KERNEL, stopAllMsg);
 	}
 
 	//		public final PersistentHashMap getNeighborData(){
@@ -227,9 +221,9 @@ public class PhysiCloudRuntime {
 
 		return false;		
 	}
-	
-	
-	
+
+
+
 
 	public final void deployFunction(final String fnName, final String fn, long updatePeriod){
 
