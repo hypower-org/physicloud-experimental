@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.hsc.hypower.physicloud.*;
+import edu.hsc.hypower.physicloud.util.DataTuple;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
 import edu.hsc.hypower.physicloud.util.NeighborData;
 
@@ -34,27 +35,28 @@ public class RequestTestVerticle extends AbstractVerticle {
 
 		System.out.println("Requests have started");
 
-		vertx.setPeriodic(10000, this::sendRequestMessage);
+		vertx.setPeriodic(10000000, this::sendRequestMessage);
 	}
 
 	private final void sendRequestMessage(Long timerEvent){
 
 		//JsonObject for request
-		JsonObject reqMsg = new JsonObject();
+		JsonObject readReqMsg = new JsonObject();
 
 		//Local copy of NeighborData
 		LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
 		Set<String> ipSet = neighborMap.keySet();
 
-		reqMsg.put("Requested Resource", "temperature.0");
-		reqMsg.put(JsonFieldNames.UPDATE_TIME, 100);
-		reqMsg.put(JsonFieldNames.IP_ADDR, "?");
-		//TODO How do I get the IP address of the current node?
-		// PJM: it needs to passed into the Verticle via the constructor...see above!
-
+		readReqMsg.put(JsonFieldNames.REQ_RES, "temperature.0");
+		readReqMsg.put(JsonFieldNames.UPDATE_TIME, 100);
+		readReqMsg.put(JsonFieldNames.IP_ADDR, ipAddr);
+		
+		
+		//This currently sends a request to all CPUs on the cluster for testing purposes
+		
 		for(String s : ipSet){
-			vertx.eventBus().send(s + "." + KernelChannels.RESOURCE_QUERY, reqMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
+			vertx.eventBus().send(s + "." + KernelChannels.RESOURCE_QUERY, readReqMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 
 				public void handle(AsyncResult<Message<JsonObject>> msg){	
@@ -66,7 +68,7 @@ public class RequestTestVerticle extends AbstractVerticle {
 						//Output result from reply
 
 
-						if(resultReply.getBoolean("Is Available")){
+						if(resultReply.getBoolean("isAllowed")){
 							System.out.println("Resource is Available");
 						}
 						else{
@@ -77,16 +79,17 @@ public class RequestTestVerticle extends AbstractVerticle {
 		}
 		
 		//This handles the setPeriodic that sends the data in the ResourceManager
-//		vertx.eventBus().consumer("reqRes.@" + localIp, new Handler<Message<JsonObject>>() {
-//			
-//			
-//			public void handle(Message<JsonObject> msg){
-//				JsonObject data = msg.body();
-//				
-//				System.out.println("Value of data: " + data.getString("Data"));
-//			}
-//			
-//		});
+		vertx.eventBus().consumer("R@" + ipAddr, new Handler<Message<DataTuple>>() {
+			
+			
+			public void handle(Message<DataTuple> msg){
+				
+				DataTuple data = msg.body();
+				
+				System.out.println("Value of data: " + data.getData());
+			}
+			
+		});
 		
 	}
 

@@ -6,6 +6,7 @@ import edu.hsc.hypower.physicloud.KernelMapNames;
 import edu.hsc.hypower.physicloud.hw.PhidgetInterfaceKitVerticle;
 import edu.hsc.hypower.physicloud.hw.PhidgetNames;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
+import edu.hsc.hypower.physicloud.util.DataTuple;
 
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
@@ -169,47 +170,99 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 			}
 		}
-
-		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.RESOURCE_QUERY, this::handleResourceQuery);
+		
+		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.RESOURCE_QUERY, this::handleReadRequest);
 	}
-
-	private final void handleResourceQuery(Message<JsonObject> msg){
-
-		JsonObject request = msg.body();
+	
+	//Returns if a resource is a available
+	
+	private final void handleResourceQuery(Message<JsonObject> readReqMsg){
+		JsonObject request = readReqMsg.body();
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
-		String reqInfo = request.getString("Requested Resource");	
+		String reqInfo = request.getString("Requested Resource");
 		
 		System.out.println("Asking for " + reqInfo);
 		
 		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);		
-		JsonObject infoReply = new JsonObject();	
-		infoReply.put(JsonFieldNames.IP_ADDR, ipAddr);
+		JsonObject readResReply = new JsonObject();	
+		readResReply.put(JsonFieldNames.IP_ADDR, ipAddr);
 		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
 		
 		ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
+		
 		outerloop:
 		for(String deviceName : deviceNames){
-			// We operate under the assumption that the keys are strings...
+
 			for(Object key : vertx.sharedData().getLocalMap(deviceName).keySet()){
 				
 				if(((String) key).compareTo(reqInfo) == 0){
-					infoReply.put("Is Available", true);
+					readResReply.put("isAllowed", true);
 					break outerloop;
 				}
 			}
 		}
-
-		infoReply.put("Is Available", false);
+		
+		if(!readResReply.containsKey("isAllowed"))
+			readResReply.put("isAllowed", false);
 	
-		System.out.println(infoReply.encodePrettily());
-		msg.reply(infoReply);
-
+		System.out.println(readResReply.encodePrettily());
+		readReqMsg.reply(readResReply);
 	}
 	
-	// TODO: Implement!
+	//Replies with availability of resource and channel name of periodic
+	//that is creates, sending data of the requested resource
+	
 	private final void handleReadRequest(Message<JsonObject> readReqMsg){
+
+		JsonObject request = readReqMsg.body();
+		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
+		String reqInfo = request.getString("Requested Resource");
+		Integer updateTime = request.getInteger(JsonFieldNames.UPDATE_TIME);
+		
+		System.out.println("Asking for " + reqInfo);
+		
+		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);		
+		JsonObject readResReply = new JsonObject();	
+		readResReply.put(JsonFieldNames.IP_ADDR, ipAddr);
+		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
+		
+		ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
+		
+		outerloop:
+		for(String deviceName : deviceNames){
+
+			for(Object key : vertx.sharedData().getLocalMap(deviceName).keySet()){
+				
+				if(((String) key).compareTo(reqInfo) == 0){
+					readResReply.put("isAllowed", true);
+					readResReply.put("channelName", reqInfo + "@." + ipAddr);
+					break outerloop;
+				}
+			}
+			
+		}
+		
+		if(!readResReply.containsKey("isAllowed"))
+			readResReply.put("isAllowed", false);
+		
+
+	
+		System.out.println(readResReply.encodePrettily());
+		
+		readReqMsg.reply(readResReply);
+
+		vertx.setPeriodic(updateTime, this::sendData);
 		
 	}
+	
+	private final void sendData(Long timerEvent){
+		
+		//I cannot figure out how to get the resource information and get the proper resource
+		vertx.eventBus().publish("R@." + ipAddress, message)
+	}
+
+	
+
 
 	@Override
 	public void stop() throws Exception {
