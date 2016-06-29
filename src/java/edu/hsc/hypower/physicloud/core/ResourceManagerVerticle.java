@@ -47,6 +47,11 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	private final long updatePeriod;
 	private final String ipAddress;
 	private final HashMap<String,Long> dataTransmitTimers;
+	private String devReq = new String();
+	private String sensReq = new String();
+	
+	// This hashmap is for the counter, but I am still thinking on how to use it
+	private HashMap<String,Integer> deviceCounter;
 	
 	
 	private final static long MIN_RESOURCE_UPDATE = 10; // 10 ms; in the future might need to be dynamic based on traffic.
@@ -213,10 +218,10 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	}
 	
 	//Replies with availability of resource and channel name of periodic
-	//that is creates, sending data of the requested resource
+	//that is created, sending data of the requested resource
 	
 	private final void handleReadRequest(Message<JsonObject> readReqMsg){
-
+		
 		JsonObject request = readReqMsg.body();
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
 		String reqInfo = request.getString("Requested Resource");
@@ -226,8 +231,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		
 		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);		
 		JsonObject readResReply = new JsonObject();
-		// TODO: Not needed:
-//		readResReply.put(JsonFieldNames.IP_ADDR, ipAddr);
 		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
 		
 		ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
@@ -241,6 +244,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					readResReply.put("isAllowed", true);
 					// TODO: need a counter to keep track of the number of resource channels open for this device.
 					// Cache the selected device name for use in the data transmission later...
+					devReq = deviceName;
+					sensReq = (String) key;
 					readResReply.put("channelName", reqInfo + "@." + ipAddr);
 					break outerloop;
 				}
@@ -257,16 +262,14 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 		// TODO: This timer needs to be stored for later cancellation.
 		// See my new HashMap above! We will store the name of the resource channel and associate a timer with it.
-//		vertx.setPeriodic(updateTime, this::sendData);
 		
 		// TODO: Make it anonymous so that the correct resource is read. Look at the data held in reqInfo above.
 		long timerId = vertx.setPeriodic(updatePeriod, new Handler<Long>(){
 			@Override
 			public void handle(Long event) {
-				// TODO: Get the data and publish...
-				// vertx.sharedData().getLocalMap(deviceName) holds ALL of the resources for the device. 
-				// Look at how the PhidgetInterfaceKitVerticle stores data while it runs.
-//				vertx.eventBus().publish("R@." + ipAddress, message)
+				
+				DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(devReq).get(sensReq));
+				vertx.eventBus().publish(reqInfo + "@." + ipAddress, message);
 			}
 		});
 		dataTransmitTimers.put(readResReply.getString("channelName"), timerId);
@@ -274,14 +277,11 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		
 	}
 	
-//	private final void sendData(Long timerEvent){
-//		
-//		//I cannot figure out how to get the resource information and get the proper resource
-//		vertx.eventBus().publish("R@." + ipAddress, message)
-//	}
+	private final void stopDataTransmission(){
+	
+	}
 
 	
-
 
 	@Override
 	public void stop() throws Exception {

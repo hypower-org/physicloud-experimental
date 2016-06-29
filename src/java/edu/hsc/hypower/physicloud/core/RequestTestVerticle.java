@@ -35,7 +35,7 @@ public class RequestTestVerticle extends AbstractVerticle {
 
 		System.out.println("Requests have started");
 
-		vertx.setPeriodic(10000000, this::sendRequestMessage);
+		vertx.setPeriodic(1000, this::sendRequestMessage);
 	}
 
 	private final void sendRequestMessage(Long timerEvent){
@@ -79,7 +79,7 @@ public class RequestTestVerticle extends AbstractVerticle {
 		}
 		
 		//This handles the setPeriodic that sends the data in the ResourceManager
-		vertx.eventBus().consumer("R@" + ipAddr, new Handler<Message<DataTuple>>() {
+		vertx.eventBus().consumer(readReqMsg.getString(JsonFieldNames.REQ_RES) + "@." + ipAddr, new Handler<Message<DataTuple>>() {
 			
 			
 			public void handle(Message<DataTuple> msg){

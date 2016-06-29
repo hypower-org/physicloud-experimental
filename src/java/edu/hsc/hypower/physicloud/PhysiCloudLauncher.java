@@ -107,7 +107,7 @@ public class PhysiCloudLauncher {
 							}
 						});
 						
-						vertx.setPeriodic(10000, new Handler<Long>() {
+						vertx.setPeriodic(1000000, new Handler<Long>() {
 
 							@Override
 							public void handle(Long event) {

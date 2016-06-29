@@ -13,6 +13,11 @@ public class DataTuple {
 	private final String type;
 	private final String data;
 	
+	public DataTuple(Object object){
+		type = object.getClass().getSimpleName();
+		data = object.toString();
+	}
+	
 	public DataTuple(String t, String d){
 		type = t;
 		data = d;
@@ -44,6 +49,7 @@ public class DataTuple {
 		data = s;
 	}
 	
+
 	public final String getType(){
 		return this.type;
 	}
