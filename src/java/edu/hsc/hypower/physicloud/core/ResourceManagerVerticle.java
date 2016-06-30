@@ -245,10 +245,13 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 		// Call device check...
 		final String deviceName = checkResourceAvailability(reqResourceName, deviceNames); 
+		Integer i = 0;
 		if(deviceName.compareTo(ResourceManagerVerticle.NO_DEVICE) != 0){
 			// Do all of the wonderful resource subscription logic!
 			readResReply.put("isAllowed", true);
 			// TODO: need a counter to keep track of the number of resource channels open for this device.
+			i++;
+			deviceCounter.put(deviceName, i);
 			// Cache the selected device name for use in the data transmission later...
 			readResReply.put("channelName", reqResourceName + "@." + requestingIpAddr);		
 			long timerId = MIN_RESOURCE_UPDATE;
