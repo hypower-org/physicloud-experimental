@@ -178,6 +178,11 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					//TODO: EXPAND THIS FUNCTIONALITY 
 					// specify for phidget RFID
 				}
+				
+				if(deviceName.equals(PhidgetNames.PHIDGET_SPATIAL)){
+					//TODO: EXPAND THIS FUNCTIONALITY 
+					// specify for phidget Spatial
+				}
 
 			}
 		}
@@ -190,7 +195,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	private final void handleResourceQuery(Message<JsonObject> readReqMsg){
 		JsonObject request = readReqMsg.body();
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
-		String reqInfo = request.getString("Requested Resource");
+		String reqInfo = request.getString(JsonFieldNames.REQ_RES);
 
 		System.out.println("Asking for " + reqInfo);
 

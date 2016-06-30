@@ -57,16 +57,21 @@ public class RequestTestVerticle extends AbstractVerticle {
 		
 		for(String s : ipSet){
 			vertx.eventBus().send(s + "." + KernelChannels.RESOURCE_QUERY, readReqMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
+				
+				
 
 
-				public void handle(AsyncResult<Message<JsonObject>> msg){	
+				public void handle(AsyncResult<Message<JsonObject>> msg){
+					
+					System.out.println("Message Sent");
 
 					if(msg.succeeded()){
 
 						JsonObject resultReply = msg.result().body();
 
 						//Output result from reply
-
+						
+						System.out.println(resultReply.getBoolean("isAllowed"));
 
 						if(resultReply.getBoolean("isAllowed")){
 							System.out.println("Resource is Available");

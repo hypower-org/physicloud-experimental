@@ -5,6 +5,7 @@ public final class PhidgetNames {
 	public static final String PHIDGET_IKIT = "PhidgetIKit";
 	public static final String PHIDGET_GPS = "PhidgetGPS";
 	public static final String PHIDGET_RFID = "PhidgetRFID";
+	public static final Object PHIDGET_SPATIAL = "PhidgetSpatial";
 	public static final String THREE_BY_THREE = "ThreeByThree";
 	public static final String AIN = "ain";
 	public static final String DIN = "din";
@@ -13,4 +14,5 @@ public final class PhidgetNames {
 	public static final String ALT_VEL = "altitudeVelocity";
 	public static final String ACCELERATION = "acceleration";
 	public static final String GYRO = "gyro";
+
 }

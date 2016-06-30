@@ -71,30 +71,39 @@ public class PhysiCloudRuntime {
 	}
 
 
-	//	public static void main(String[] args) throws JsonProcessingException, IOException {
-	//
-	//		PhysiCloudRuntime test = new PhysiCloudRuntime(args[0]);
-	//
-	//		test.start();
-	//		
-	//		new java.util.Timer().schedule( 
-	//		        new java.util.TimerTask() {
-	//		            @Override
-	//		            public void run() {
-	//		            	Boolean isRes =   test.isResourceAvailable("temp.0");
-	//		            	if(isRes == true)
-	//		            		System.out.println("Resource available!");
-	//		            	else
-	//		            		System.out.println("Resource unavailable :(");
-	//		        
-	//		            	test.stopAll();
-	//		            }
-	//		        }, 
-	//		        10000
-	//		);
-	//		
-	//		
-	//	}
+		public static void main(String[] args) throws JsonProcessingException, IOException {
+	
+			PhysiCloudRuntime test = new PhysiCloudRuntime(args[0]);
+	
+			test.start();
+			
+			new java.util.Timer().schedule( 
+			        new java.util.TimerTask() {
+			            @Override
+			            public void run() {
+			            	
+			            	
+			         
+			            }
+			        }, 
+			        10
+			);
+			
+			
+			new java.util.Timer().schedule( 
+			        new java.util.TimerTask() {
+			            @Override
+			            public void run() {
+			            	
+			            	test.stopAll();
+			         
+			            }
+			        }, 
+			        10000000
+			);
+			
+			
+		}
 
 	public final void start(){
 
