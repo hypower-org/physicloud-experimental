@@ -37,7 +37,7 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
  * 
  * @author pmartin@hsc.edu
  *		   hackleyb18@hsc.edu	
- *		   kengask18@hsc.edu	
+ *		   kangask18@hsc.edu	
  */
 
 public class ResourceManagerVerticle extends AbstractVerticle {
@@ -247,10 +247,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			// TODO: need a counter to keep track of the number of resource channels open for this device.
 			// Cache the selected device name for use in the data transmission later...
 			readResReply.put("channelName", reqResourceName + "@." + requestingIpAddr);			
-			// TODO: This timer needs to be stored for later cancellation.
-			// See my new HashMap above! We will store the name of the resource channel and associate a timer with it.
-			
-			// TODO: Make it anonymous so that the correct resource is read. Look at the data held in reqInfo above.
+
 			long timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
 				@Override
 				public void handle(Long event) {
