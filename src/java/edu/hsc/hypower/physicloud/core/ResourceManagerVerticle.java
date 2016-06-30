@@ -43,20 +43,20 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
 public class ResourceManagerVerticle extends AbstractVerticle {
 
 	private static final String NO_DEVICE = "NO_DEVICE";
-	
+
 	private final JsonNode rootNode;
 
 	private final long updatePeriod;
 	private final String ipAddress;
 	private final HashMap<String,Long> dataTransmitTimers;
 	// TODO: Do not make member variables.
-//	private String devReq = new String();
-//	private String sensReq = new String();
-	
+	//	private String devReq = new String();
+	//	private String sensReq = new String();
+
 	// This hashmap is for the counter, but I am still thinking on how to use it
 	private HashMap<String,Integer> deviceCounter;
-	
-	
+
+
 	private final static long MIN_RESOURCE_UPDATE = 10; // 10 ms; in the future might need to be dynamic based on traffic.
 
 	public ResourceManagerVerticle(String ipAddr, long up, JsonNode node){
@@ -172,7 +172,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					//TODO: EXPAND THIS FUNCTIONALITY 
 					// specify for phidget gps
 				}
-				
+
 				if(deviceName.equals(PhidgetNames.PHIDGET_RFID))
 				{
 					//TODO: EXPAND THIS FUNCTIONALITY 
@@ -184,59 +184,58 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.RESOURCE_QUERY, this::handleResourceQuery);
 		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.READ_REQUEST, this::handleReadRequest);
 	}
-	
+
 	//Returns if a resource is a available
-	
+
 	private final void handleResourceQuery(Message<JsonObject> readReqMsg){
 		JsonObject request = readReqMsg.body();
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
 		String reqInfo = request.getString("Requested Resource");
-		
+
 		System.out.println("Asking for " + reqInfo);
-		
+
 		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);		
 		JsonObject readResReply = new JsonObject();	
 		readResReply.put(JsonFieldNames.IP_ADDR, ipAddr);
 		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
-		
-		ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
-		
-		outerloop:
-		for(String deviceName : deviceNames){
 
-			for(Object key : vertx.sharedData().getLocalMap(deviceName).keySet()){
-				
-				if(((String) key).compareTo(reqInfo) == 0){
-					readResReply.put("isAllowed", true);
-					break outerloop;
+		ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
+
+		outerloop:
+			for(String deviceName : deviceNames){
+
+				for(Object key : vertx.sharedData().getLocalMap(deviceName).keySet()){
+
+					if(((String) key).compareTo(reqInfo) == 0){
+						readResReply.put("isAllowed", true);
+						break outerloop;
+					}
 				}
 			}
-		}
-		
+
 		if(!readResReply.containsKey("isAllowed"))
 			readResReply.put("isAllowed", false);
-	
+
 		System.out.println(readResReply.encodePrettily());
 		readReqMsg.reply(readResReply);
 	}
-	
+
 	//Replies with availability of resource and channel name of periodic
 	//that is created, sending data of the requested resource
-	
+
 	private final void handleReadRequest(Message<JsonObject> readReqMsg){
-		
+
 		JsonObject request = readReqMsg.body();
 		String requestingIpAddr = request.getString(JsonFieldNames.IP_ADDR);
 		final String reqResourceName = request.getString("Requested Resource");
-		// TODO: Before setting up the setPeriodic, check to see if this updatePeriod is < MIN_RESOURCE_UPDATE...
 		Integer resourceUpdatePeriod = request.getInteger(JsonFieldNames.UPDATE_TIME);
-		
+
 		System.out.println("Asking for " + reqResourceName);
-		
+
 		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);		
 		JsonObject readResReply = new JsonObject();
 		System.out.println("Requester IP Address:" + requestingIpAddr + "\n" + "Requested Value: " + reqResourceName);
-		
+
 		ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
 
 		// Call device check...
@@ -247,53 +246,55 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			// TODO: need a counter to keep track of the number of resource channels open for this device.
 			// Cache the selected device name for use in the data transmission later...
 			readResReply.put("channelName", reqResourceName + "@." + requestingIpAddr);			
-
-			long timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
-				@Override
-				public void handle(Long event) {
-					DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(deviceName).get(reqResourceName));
-					vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
-				}
-			});
+			if(resourceUpdatePeriod < MIN_RESOURCE_UPDATE)
+			{
+				long timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
+					@Override
+					public void handle(Long event) {
+						DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(deviceName).get(reqResourceName));
+						vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
+					}
+				});
+			}
 			dataTransmitTimers.put(readResReply.getString("channelName"), timerId);
 			// TODO: At some point, we will need to handle the removal of the data transmission.
-			
+
 		}
 		else{
 			System.err.println(reqResourceName + " not found!");
 			readResReply.put("isAllowed", false);
 		}
-		
+
 		System.out.println(readResReply.encodePrettily());
-		
+
 		readReqMsg.reply(readResReply);
 
 	}
-	
+
 	private final void stopDataTransmission(){
-	
+
 	}
 
-	
+
 
 	@Override
 	public void stop() throws Exception {
 		System.out.println(this.getClass().getSimpleName() + " stopping.");
 		super.stop();
 	}
-	
+
 	private final String checkResourceAvailability(final String reqResourceName, final ArrayList<String> deviceNames){
 		String deviceName = ResourceManagerVerticle.NO_DEVICE;
 		foundDevice:
-		for(String devName : deviceNames){
-			Set<Object> resourceKeys = vertx.sharedData().getLocalMap(devName).keySet();
-			for(Object resourceKey : resourceKeys){
-				if(((String) resourceKey).compareTo(reqResourceName) == 0){
-					deviceName = devName;
-					break foundDevice;
+			for(String devName : deviceNames){
+				Set<Object> resourceKeys = vertx.sharedData().getLocalMap(devName).keySet();
+				for(Object resourceKey : resourceKeys){
+					if(((String) resourceKey).compareTo(reqResourceName) == 0){
+						deviceName = devName;
+						break foundDevice;
+					}
 				}
 			}
-		}
 		return deviceName;
 	}
 
