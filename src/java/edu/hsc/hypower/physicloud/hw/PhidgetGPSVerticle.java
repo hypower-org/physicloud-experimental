@@ -39,7 +39,7 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 				}
 			});
 			gps.waitForAttachment();
-			
+
 		} catch (PhidgetException e) {
 			e.printStackTrace();
 		}
@@ -57,12 +57,11 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 
 		GPSPositionChangeListener GPSPositionChangeListener = null;
 		gps.addGPSPositionChangeListener(GPSPositionChangeListener);
-		
+
 		try {
 			latLongMap.put(gps.getLongitude(), gps.getLatitude());
 			altVelMap.put(gps.getAltitude(), gps.getVelocity());
 		} catch (PhidgetException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
