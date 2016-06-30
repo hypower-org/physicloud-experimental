@@ -245,10 +245,11 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			readResReply.put("isAllowed", true);
 			// TODO: need a counter to keep track of the number of resource channels open for this device.
 			// Cache the selected device name for use in the data transmission later...
-			readResReply.put("channelName", reqResourceName + "@." + requestingIpAddr);			
-			if(resourceUpdatePeriod < MIN_RESOURCE_UPDATE)
+			readResReply.put("channelName", reqResourceName + "@." + requestingIpAddr);		
+			long timerId = MIN_RESOURCE_UPDATE;
+			if(resourceUpdatePeriod <= MIN_RESOURCE_UPDATE)
 			{
-				long timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
+				 timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
 					@Override
 					public void handle(Long event) {
 						DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(deviceName).get(reqResourceName));
