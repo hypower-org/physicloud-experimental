@@ -249,7 +249,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			long timerId = MIN_RESOURCE_UPDATE;
 			if(resourceUpdatePeriod <= MIN_RESOURCE_UPDATE)
 			{
-				 timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
+				timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
 					@Override
 					public void handle(Long event) {
 						DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(deviceName).get(reqResourceName));
@@ -257,6 +257,9 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					}
 				});
 			}
+			// FIXME: Line 249, which is needed to satisfy line 263, presents a problem. If the resourceUpdatePeriod is less than 10ms, it will put a false value into 
+			// dataTransmitTimers
+
 			dataTransmitTimers.put(readResReply.getString("channelName"), timerId);
 			// TODO: At some point, we will need to handle the removal of the data transmission.
 
