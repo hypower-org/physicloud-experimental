@@ -42,13 +42,16 @@ import edu.hsc.hypower.physicloud.util.NeighborData;
 
 public class ResourceManagerVerticle extends AbstractVerticle {
 
+	private static final String NO_DEVICE = "NO_DEVICE";
+	
 	private final JsonNode rootNode;
 
 	private final long updatePeriod;
 	private final String ipAddress;
 	private final HashMap<String,Long> dataTransmitTimers;
-	private String devReq = new String();
-	private String sensReq = new String();
+	// TODO: Do not make member variables.
+//	private String devReq = new String();
+//	private String sensReq = new String();
 	
 	// This hashmap is for the counter, but I am still thinking on how to use it
 	private HashMap<String,Integer> deviceCounter;
@@ -178,8 +181,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 			}
 		}
-		
-		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.RESOURCE_QUERY, this::handleReadRequest);
+		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.RESOURCE_QUERY, this::handleResourceQuery);
+		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.READ_REQUEST, this::handleReadRequest);
 	}
 	
 	//Returns if a resource is a available
@@ -223,58 +226,51 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	private final void handleReadRequest(Message<JsonObject> readReqMsg){
 		
 		JsonObject request = readReqMsg.body();
-		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
-		String reqInfo = request.getString("Requested Resource");
-		Integer updateTime = request.getInteger(JsonFieldNames.UPDATE_TIME);
+		String requestingIpAddr = request.getString(JsonFieldNames.IP_ADDR);
+		final String reqResourceName = request.getString("Requested Resource");
+		// TODO: Before setting up the setPeriodic, check to see if this updatePeriod is < MIN_RESOURCE_UPDATE...
+		Integer resourceUpdatePeriod = request.getInteger(JsonFieldNames.UPDATE_TIME);
 		
-		System.out.println("Asking for " + reqInfo);
+		System.out.println("Asking for " + reqResourceName);
 		
 		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);		
 		JsonObject readResReply = new JsonObject();
-		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
+		System.out.println("Requester IP Address:" + requestingIpAddr + "\n" + "Requested Value: " + reqResourceName);
 		
 		ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
-		
-		outerloop:
-		for(String deviceName : deviceNames){
 
-			for(Object key : vertx.sharedData().getLocalMap(deviceName).keySet()){
-				
-				if(((String) key).compareTo(reqInfo) == 0){
-					readResReply.put("isAllowed", true);
-					// TODO: need a counter to keep track of the number of resource channels open for this device.
-					// Cache the selected device name for use in the data transmission later...
-					devReq = deviceName;
-					sensReq = (String) key;
-					readResReply.put("channelName", reqInfo + "@." + ipAddr);
-					break outerloop;
+		// Call device check...
+		final String deviceName = checkResourceAvailability(reqResourceName, deviceNames); 
+		if(deviceName.compareTo(ResourceManagerVerticle.NO_DEVICE) != 0){
+			// Do all of the wonderful resource subscription logic!
+			readResReply.put("isAllowed", true);
+			// TODO: need a counter to keep track of the number of resource channels open for this device.
+			// Cache the selected device name for use in the data transmission later...
+			readResReply.put("channelName", reqResourceName + "@." + requestingIpAddr);			
+			// TODO: This timer needs to be stored for later cancellation.
+			// See my new HashMap above! We will store the name of the resource channel and associate a timer with it.
+			
+			// TODO: Make it anonymous so that the correct resource is read. Look at the data held in reqInfo above.
+			long timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
+				@Override
+				public void handle(Long event) {
+					DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(deviceName).get(reqResourceName));
+					vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
 				}
-			}
+			});
+			dataTransmitTimers.put(readResReply.getString("channelName"), timerId);
+			// TODO: At some point, we will need to handle the removal of the data transmission.
 			
 		}
-		if(!readResReply.containsKey("isAllowed"))
+		else{
+			System.err.println(reqResourceName + " not found!");
 			readResReply.put("isAllowed", false);
-
-	
+		}
+		
 		System.out.println(readResReply.encodePrettily());
 		
 		readReqMsg.reply(readResReply);
 
-		// TODO: This timer needs to be stored for later cancellation.
-		// See my new HashMap above! We will store the name of the resource channel and associate a timer with it.
-		
-		// TODO: Make it anonymous so that the correct resource is read. Look at the data held in reqInfo above.
-		long timerId = vertx.setPeriodic(updatePeriod, new Handler<Long>(){
-			@Override
-			public void handle(Long event) {
-				
-				DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(devReq).get(sensReq));
-				vertx.eventBus().publish(reqInfo + "@." + ipAddress, message);
-			}
-		});
-		dataTransmitTimers.put(readResReply.getString("channelName"), timerId);
-		// TODO: At some point, we will need to handle the removal of the data transmission.
-		
 	}
 	
 	private final void stopDataTransmission(){
@@ -287,6 +283,21 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	public void stop() throws Exception {
 		System.out.println(this.getClass().getSimpleName() + " stopping.");
 		super.stop();
+	}
+	
+	private final String checkResourceAvailability(final String reqResourceName, final ArrayList<String> deviceNames){
+		String deviceName = ResourceManagerVerticle.NO_DEVICE;
+		foundDevice:
+		for(String devName : deviceNames){
+			Set<Object> resourceKeys = vertx.sharedData().getLocalMap(devName).keySet();
+			for(Object resourceKey : resourceKeys){
+				if(((String) resourceKey).compareTo(reqResourceName) == 0){
+					deviceName = devName;
+					break foundDevice;
+				}
+			}
+		}
+		return deviceName;
 	}
 
 }
