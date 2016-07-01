@@ -9,7 +9,8 @@ import com.phidgets.event.AttachListener;
 import com.phidgets.event.GPSPositionChangeListener;
 
 import edu.hsc.hypower.physicloud.KernelChannels;
-
+import edu.hsc.hypower.physicloud.util.DataArray;
+import edu.hsc.hypower.physicloud.util.DataTuple;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
@@ -18,14 +19,14 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 
 	private final String verticleName;
 	private final Long updatePeriod = 100l;
-
+	private static final String LAT_LONG = "latitudeLongitude";
+	private static final String ALT_VEL = "altitudeVelocity";
 	private GPSPhidget gps;
-
-	// I experimented with structuring the class similar to IKITVerticle, with Map<K,V> 
-	// as private data members but I did not see the need for them
+	int count;
 
 	public PhidgetGPSVerticle(String n){
 		verticleName = n;
+		count = 0;
 	}
 
 	public void start() throws Exception {
@@ -39,6 +40,7 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 				}
 			});
 			gps.waitForAttachment();
+			count++;
 
 		} catch (PhidgetException e) {
 			e.printStackTrace();
@@ -52,15 +54,20 @@ public class PhidgetGPSVerticle extends AbstractVerticle {
 	public final void updateSensorData(Long l) {
 
 
-		LocalMap<Double, Double> latLongMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.LAT_LONG);
-		LocalMap<Double, Double> altVelMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ALT_VEL);		
+		LocalMap<String, DataArray> gpsMap = vertx.sharedData().getLocalMap(verticleName + "." + count);
+		ArrayList<DataTuple> dataArr = new ArrayList<DataTuple>();
 
 		GPSPositionChangeListener GPSPositionChangeListener = null;
 		gps.addGPSPositionChangeListener(GPSPositionChangeListener);
 
 		try {
-			latLongMap.put(gps.getLongitude(), gps.getLatitude());
-			altVelMap.put(gps.getAltitude(), gps.getVelocity());
+
+			dataArr.add(new DataTuple(new Double(gps.getLatitude())));
+			dataArr.add(new DataTuple(new Double(gps.getLongitude())));
+			dataArr.add(new DataTuple(new Double(gps.getAltitude())));
+			dataArr.add(new DataTuple(new Double(gps.getVelocity())));
+			gpsMap.put(verticleName + "." + count, new DataArray(dataArr));
+
 		} catch (PhidgetException e) {
 			e.printStackTrace();
 		}

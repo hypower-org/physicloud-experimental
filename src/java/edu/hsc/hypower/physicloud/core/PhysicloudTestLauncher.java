@@ -76,7 +76,7 @@ public class PhysicloudTestLauncher {
 						Vertx vertx = asyncRes.result();
 
 						
-						vertx.deployVerticle(new PhidgetRFIDVerticle(),
+						vertx.deployVerticle(new PhidgetRFIDVerticle("PhidgetRFID"),
 								new Handler<AsyncResult<String>>(){
 							@Override
 							public void handle(AsyncResult<String> res) {
