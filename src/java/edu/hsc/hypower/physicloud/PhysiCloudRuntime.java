@@ -17,6 +17,8 @@ import edu.hsc.hypower.physicloud.core.HeartBeatVerticle;
 
 import clojure.lang.PersistentHashMap;
 import edu.hsc.hypower.physicloud.core.*;
+import edu.hsc.hypower.physicloud.util.DataMessage;
+import edu.hsc.hypower.physicloud.util.JsonFieldNames;
 import edu.hsc.hypower.physicloud.util.NeighborData;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
@@ -216,17 +218,49 @@ public class PhysiCloudRuntime {
 
 		return false;		
 	}
-	
+
 	public final ArrayList<String> listAllResources(){
 		ArrayList<String> resources = new ArrayList<String>();
-		
-		
-		
+
+
+
 		return resources;
 	}
 
 	public final void subscribeToResource(final String resourceName, long updatePeriod, String ipAddr){
 		// TODO: for dynamic testing in clojure - may not be part of the final API.
+		JsonObject requestMsg = new JsonObject();
+		requestMsg.put(JsonFieldNames.IP_ADDR, ipAddr);
+		requestMsg.put(JsonFieldNames.UPDATE_TIME, updatePeriod);
+		requestMsg.put(JsonFieldNames.REQ_RES, resourceName);
+
+		vertxHook.eventBus().send(ipAddr + "." + KernelChannels.READ_REQUEST, requestMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
+
+			@Override
+			public void handle(AsyncResult<Message<JsonObject>> reply) {
+
+				if(reply.succeeded()){
+
+					JsonObject resultReply = reply.result().body();
+					String channelName = resultReply.getString(JsonFieldNames.CHANNEL_NAME);
+					vertxHook.eventBus().consumer(channelName, new Handler<Message<DataMessage>>()	{
+
+						@Override
+						public void handle(Message<DataMessage> event) {
+							// TODO Auto-generated method stub
+							System.out.println(event.body());
+						}	
+
+					});
+
+				}
+
+				else{
+					System.out.println("Reply did not succeed...");
+				}
+
+			}
+		});
 	}
 
 	public final void deployFunction(final String fnName, final String fn, long updatePeriod){
