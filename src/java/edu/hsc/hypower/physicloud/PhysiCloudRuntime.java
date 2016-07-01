@@ -46,15 +46,15 @@ public class PhysiCloudRuntime {
 	private String deviceLocation;
 	private String secCode;
 	private long heartBeatPeriod;
-	
+
 	private static final String STOP = "isTimeToStop";
 	private static final String IPADDR = "ipAddr";
 	private static final String ALL = "*";
-	
+
 	public PhysiCloudRuntime(String configFileName) throws JsonProcessingException, IOException{
 		ObjectMapper mapper = new ObjectMapper();
 
-		JsonNode rootNode = mapper.readTree(new File(configFileName + ".json"));
+		rootNode = mapper.readTree(new File(configFileName + ".json"));
 
 		// retrieve IP
 		nodeIp = rootNode.get("IP").asText();
@@ -71,39 +71,39 @@ public class PhysiCloudRuntime {
 	}
 
 
-		public static void main(String[] args) throws JsonProcessingException, IOException {
-	
-			PhysiCloudRuntime test = new PhysiCloudRuntime(args[0]);
-	
-			test.start();
-			
-			new java.util.Timer().schedule( 
-			        new java.util.TimerTask() {
-			            @Override
-			            public void run() {
-			            	
-			            	
-			         
-			            }
-			        }, 
-			        10
-			);
-			
-			
-			new java.util.Timer().schedule( 
-			        new java.util.TimerTask() {
-			            @Override
-			            public void run() {
-			            	
-			            	test.stopAll();
-			         
-			            }
-			        }, 
-			        10000000
-			);
-			
-			
-		}
+	public static void main(String[] args) throws JsonProcessingException, IOException {
+
+		PhysiCloudRuntime test = new PhysiCloudRuntime(args[0]);
+
+		test.start();
+
+		new java.util.Timer().schedule( 
+				new java.util.TimerTask() {
+					@Override
+					public void run() {
+
+
+
+					}
+				}, 
+				10
+				);
+
+
+		new java.util.Timer().schedule( 
+				new java.util.TimerTask() {
+					@Override
+					public void run() {
+
+						test.stopAll();
+
+					}
+				}, 
+				10000000
+				);
+
+
+	}
 
 	public final void start(){
 
@@ -131,19 +131,12 @@ public class PhysiCloudRuntime {
 						public void handle(Message<JsonObject> msg) {
 							System.out.println("Received a stop message!");
 							JsonObject incomingStopMsg = msg.body();
-							
+
 							// If the IP is the same, or it is the ALL message; AND it is a STOP.
 							if((incomingStopMsg.getString(IPADDR).equals(nodeIp) || incomingStopMsg.getString(IPADDR).equals(ALL))
 									&& incomingStopMsg.getBoolean(STOP)){
 								stop();
 							}
-							
-							// TODO: == checks if the reference is the same, not if the value is the same!
-//							if(incomingStopMsg.getString("nIpAddr") == nodeIp)
-//								stop();
-//
-//							else if(incomingStopMsg.getString("nIpAddr") == "ALL")
-//								stop();
 						}
 					});
 
@@ -153,6 +146,10 @@ public class PhysiCloudRuntime {
 						public void handle(AsyncResult<String> res) {
 							if(res.succeeded()){
 								System.out.println("Deployed ResourceManagerVerticle!");
+							}
+							else{
+								System.out.println("Failed to deployed ResourceManagerVerticle!");
+								res.cause().printStackTrace();
 							}
 						}
 					});
@@ -168,17 +165,6 @@ public class PhysiCloudRuntime {
 							}
 						}
 					});
-
-					vertxHook.deployVerticle(new RequestTestVerticle(nodeIp),
-							new Handler<AsyncResult<String>>(){
-						@Override
-						public void handle(AsyncResult<String> res) {
-							if(res.succeeded()){
-								System.out.println("Deployed RequestTestVerticle!");
-							}
-						}
-					});
-
 
 				}
 			}
@@ -234,7 +220,7 @@ public class PhysiCloudRuntime {
 	public final void subscribeToResource(final String resourceName){
 		// TODO: for dynamic testing in clojure - may not be part of the final API.
 	}
-	
+
 	public final void deployFunction(final String fnName, final String fn, long updatePeriod){
 
 		vertxHook.deployVerticle(new DynamicVerticle(fnName, fn, updatePeriod), 

@@ -3,7 +3,7 @@
     "IP" : "127.0.0.1",
     "Location" : "East wall",	
     "securityCode" : "h27ce566382jdiii238d",
-    "heartBeatPeriod" : 1000,
+    "heartBeatPeriod" : 2000,
 
 
     "device.PhidgetIKit":		{

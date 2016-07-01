@@ -132,9 +132,9 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 							hasDou = true;
 						}
 					}
-
 					// Kind of hacky here...but we are boxed in by our json format.
 					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount);
+					System.out.println(phidgetIKITName + " started.");
 					int deviceCount = 0; 
 					if(hasAin){
 						deviceMap.put(deviceCount, PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount) + "." + PhidgetNames.AIN);
@@ -195,32 +195,23 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	private final void handleResourceQuery(Message<JsonObject> readReqMsg){
 		JsonObject request = readReqMsg.body();
 		String ipAddr = request.getString(JsonFieldNames.IP_ADDR);
-		String reqInfo = request.getString(JsonFieldNames.REQ_RES);
+		String reqResourceName = request.getString(JsonFieldNames.REQ_RES);
 
-		System.out.println("Asking for " + reqInfo);
+		System.out.println("Asking for " + reqResourceName);
 
 		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);		
 		JsonObject readResReply = new JsonObject();	
 		readResReply.put(JsonFieldNames.IP_ADDR, ipAddr);
-		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqInfo);
+		System.out.println("Requester IP Address:" + ipAddr + "\n" + "Requested Value: " + reqResourceName);
 
 		ArrayList<String> deviceNames = new ArrayList<String>(deviceMap.values());
-
-		outerloop:
-			for(String deviceName : deviceNames){
-
-				for(Object key : vertx.sharedData().getLocalMap(deviceName).keySet()){
-
-					if(((String) key).compareTo(reqInfo) == 0){
-						readResReply.put("isAllowed", true);
-						break outerloop;
-					}
-				}
-			}
-
-		if(!readResReply.containsKey("isAllowed"))
+		final String deviceName = checkResourceAvailability(reqResourceName, deviceNames); 
+		if(deviceName.compareTo(ResourceManagerVerticle.NO_DEVICE) != 0){
+			readResReply.put("isAllowed", true);
+		}
+		else{
 			readResReply.put("isAllowed", false);
-
+		}
 		System.out.println(readResReply.encodePrettily());
 		readReqMsg.reply(readResReply);
 	}
