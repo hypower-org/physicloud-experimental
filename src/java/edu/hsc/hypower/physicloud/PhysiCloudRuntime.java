@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -81,32 +82,6 @@ public class PhysiCloudRuntime {
 
 		test.start();
 
-		new java.util.Timer().schedule( 
-				new java.util.TimerTask() {
-					@Override
-					public void run() {
-
-
-
-					}
-				}, 
-				10
-				);
-
-
-		new java.util.Timer().schedule( 
-				new java.util.TimerTask() {
-					@Override
-					public void run() {
-
-						test.stopAll();
-
-					}
-				}, 
-				10000000
-				);
-
-
 	}
 
 	public final void start(){
@@ -153,7 +128,7 @@ public class PhysiCloudRuntime {
 								System.out.println("Deployed ResourceManagerVerticle!");
 							}
 							else{
-								System.out.println("Failed to deployed ResourceManagerVerticle!");
+								System.out.println("Failed to deploy: " + ResourceManagerVerticle.class.getName());
 								res.cause().printStackTrace();
 							}
 						}
@@ -167,6 +142,10 @@ public class PhysiCloudRuntime {
 						public void handle(AsyncResult<String> res) {
 							if(res.succeeded()){
 								System.out.println("Deployed HeartBeatVerticle!");
+							}
+							else{
+								System.out.println("Failed to deploy " + HeartBeatVerticle.class.getName());
+								res.cause().printStackTrace();
 							}
 						}
 					});
@@ -209,23 +188,39 @@ public class PhysiCloudRuntime {
 
 	public final boolean isResourceAvailable(final String resourceName){
 
-		LocalMap<Integer,NeighborData> neighborMap = vertxHook.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
+		
+		LocalMap<String, String> localResourceMap = vertxHook.sharedData().getLocalMap(KernelMapNames.RESOURCES);
+		LocalMap<String, NeighborData> neighborMap = vertxHook.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
-		for(int i = 0; i < neighborMap.size(); i++){
-			
-//			for(Object key : vertxHook.sharedData().getLocalMap(neighborMap.get(i)).keySet()){
-//				if(key == resourceName)
-//					return true;
-//			}
+		// Look for it on the device...
+		for(String deviceName : localResourceMap.keySet()){
+			String[] resourceNames = localResourceMap.get(deviceName).split(",");
+			for(String resName : resourceNames){
+				if(resName.compareTo(resourceName) == 0){
+					return true;
+				}
+			}
 		}
-
+		
+		// Then look at what your neighbors have...
+		for(String neighborIp : neighborMap.keySet()){
+			final HashMap<String, ArrayList<String>> neighborDeviceMap = neighborMap.get(neighborIp).getDeviceData();
+			System.out.println(neighborDeviceMap);
+			for(Entry<String, ArrayList<String>> e : neighborDeviceMap.entrySet()){
+				// Fancy Java 8 stream!
+				System.out.println("Checking " + e.getValue());
+				if(e.getValue().stream().anyMatch(str -> str.compareTo(resourceName) == 0 )){
+					return true;
+				}
+			}
+		}
 		return false;		
 	}
 
 	public final ArrayList<String> listAllResources(){
 		ArrayList<String> resources = new ArrayList<String>();
 
-
+		// TODO: still needs to be designed.
 
 		return resources;
 	}

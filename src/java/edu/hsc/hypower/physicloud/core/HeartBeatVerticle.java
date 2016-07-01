@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import edu.hsc.hypower.physicloud.*;
+import edu.hsc.hypower.physicloud.util.DataArray;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
 import edu.hsc.hypower.physicloud.util.NeighborData;
 
@@ -63,8 +64,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 					System.out.println("Heartbeat received from " + hbIpAddr);
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 					
-//					System.out.println(hbJsonMsg.encodePrettily());
-
 					//Instantiation of objects necessary for parsing JSON
 					HashMap<String, ArrayList<String>> neighborResourceMap = new HashMap<String,ArrayList<String>>();
 					for(String fieldName : hbJsonMsg.fieldNames()){
@@ -100,14 +99,20 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 		
 		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
+		LocalMap<String, String> localResourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 	
 		JsonArray sensorArray = new JsonArray();
-		//Store list of sensors in array and place proper information into JSON
+		// Collect each device's resource information and store locally and transmit to neigbors.
 		for(int i = 0; i < deviceMap.size(); i++){
 			sensorArray.clear();
-			for(Object key : vertx.sharedData().getLocalMap(deviceMap.get(i)).keySet()){
-				sensorArray.add(key);
+			String deviceName = deviceMap.get(i);
+			LocalMap<String,DataArray> deviceDataMap = vertx.sharedData().getLocalMap(deviceName);
+			String localResources = "";
+			for(String resourceKey : deviceDataMap.keySet()){
+				sensorArray.add(resourceKey);
+				localResources += resourceKey + ",";
 			}
+			localResourceMap.put(deviceName, localResources);
 			hbInfoMsg.put(deviceMap.get(i), sensorArray);
 		}
 		System.out.println(ipAddr + " alive.");
@@ -137,5 +142,4 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		}
 
 	}
-
 }
