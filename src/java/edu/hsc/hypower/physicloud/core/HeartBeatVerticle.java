@@ -49,7 +49,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 		vertx.setPeriodic(hbPeriod, this::handleHeartbeat);
 
-		vertx.setPeriodic(2000, this::timeoutChecker);
+		vertx.setPeriodic(5000, this::timeoutChecker);
 
 		vertx.eventBus().consumer(KernelChannels.HEARTBEAT, new Handler<Message<JsonObject>>(){
 			@Override
@@ -57,31 +57,31 @@ public class HeartBeatVerticle extends AbstractVerticle {
 
 				// Need a more sophisticated neighbor data book keeping mechanism!		
 				JsonObject hbJsonMsg = msg.body();
-				String tempIp = hbJsonMsg.getString(JsonFieldNames.IP_ADDR);
+				String hbIpAddr = hbJsonMsg.getString(JsonFieldNames.IP_ADDR);
 
-				if(tempIp != ipAddr){
-					System.out.println("Heartbeat received from " + tempIp);
+				if(hbIpAddr != ipAddr){
+					System.out.println("Heartbeat received from " + hbIpAddr);
 					LocalMap<String,NeighborData> neighborMap = vertx.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 					
-					System.out.println(hbJsonMsg.encodePrettily());
+//					System.out.println(hbJsonMsg.encodePrettily());
 
 					//Instantiation of objects necessary for parsing JSON
 					HashMap<String, ArrayList<String>> neighborResourceMap = new HashMap<String,ArrayList<String>>();
-					for(String s : hbJsonMsg.fieldNames()){
+					for(String fieldName : hbJsonMsg.fieldNames()){
 						// If it is not the IP, it will be a resource array
-						if(s.compareTo(JsonFieldNames.IP_ADDR) != 0){
-							ArrayList<String> resourceNames = new ArrayList<>();
-							JsonArray resourceArr = hbJsonMsg.getJsonArray(s);
+						if(fieldName.compareTo(JsonFieldNames.IP_ADDR) != 0){
+							ArrayList<String> resourceNames = new ArrayList<String>();
+							JsonArray resourceArr = hbJsonMsg.getJsonArray(fieldName);
 							for(int i = 0; i < resourceArr.size(); i++){
 								resourceNames.add(resourceArr.getString(i));
 							}
-							neighborResourceMap.put(s, resourceNames);
+							neighborResourceMap.put(fieldName, resourceNames);
 						}
 					}
-					neighborMap.put(tempIp, new NeighborData(tempIp, neighborResourceMap));
+					neighborMap.put(hbIpAddr, new NeighborData(hbIpAddr, neighborResourceMap));
 
 					// Update the last update time from this neighbor.
-					neighborUpdateTimes.put(tempIp, System.currentTimeMillis());
+					neighborUpdateTimes.put(hbIpAddr, System.currentTimeMillis());
 				}
 			}
 		});
@@ -95,31 +95,23 @@ public class HeartBeatVerticle extends AbstractVerticle {
 	private final void handleHeartbeat(Long timerEvent){
 
 		//Creates the initial JSON and places the IP address into the file
-		JsonObject hbInfo = new JsonObject();
-		hbInfo.put(JsonFieldNames.IP_ADDR,  ipAddr);
+		JsonObject hbInfoMsg = new JsonObject();
+		hbInfoMsg.put(JsonFieldNames.IP_ADDR,  ipAddr);
 
 		
 		LocalMap<Integer, String> deviceMap = vertx.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
 	
 		JsonArray sensorArray = new JsonArray();
-
-
 		//Store list of sensors in array and place proper information into JSON
 		for(int i = 0; i < deviceMap.size(); i++){
 			sensorArray.clear();
 			for(Object key : vertx.sharedData().getLocalMap(deviceMap.get(i)).keySet()){
-				System.out.println(key);
 				sensorArray.add(key);
-				
 			}
-			
-			hbInfo.put(deviceMap.get(i), sensorArray);
+			hbInfoMsg.put(deviceMap.get(i), sensorArray);
 		}
-		
-		
 		System.out.println(ipAddr + " alive.");
-		
-		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfo);
+		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfoMsg);
 	}
 
 	@Override
@@ -127,13 +119,6 @@ public class HeartBeatVerticle extends AbstractVerticle {
 		System.out.println(this.getClass().getSimpleName() + " stopping.");
 		super.stop();
 	}
-	
-	
-	
-	
-	
-	
-	
 
 	private final void timeoutChecker(Long timerEvent){
 

@@ -204,14 +204,14 @@ public class PhysiCloudRuntime {
 
 	public final boolean isResourceAvailable(final String resourceName){
 
-		LocalMap<Integer,String> neighborMap = vertxHook.sharedData().getLocalMap(KernelMapNames.AVAILABLE_DEVICES);
+		LocalMap<Integer,NeighborData> neighborMap = vertxHook.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
 		for(int i = 0; i < neighborMap.size(); i++){
-
-			for(Object key : vertxHook.sharedData().getLocalMap(neighborMap.get(i)).keySet()){
-				if(key == resourceName)
-					return true;
-			}
+			
+//			for(Object key : vertxHook.sharedData().getLocalMap(neighborMap.get(i)).keySet()){
+//				if(key == resourceName)
+//					return true;
+//			}
 		}
 
 		return false;		
