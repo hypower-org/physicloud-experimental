@@ -134,7 +134,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					}
 					// Kind of hacky here...but we are boxed in by our json format.
 					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount);
-					System.out.println(phidgetIKITName + " started.");
 					int deviceCount = 0; 
 					if(hasAin){
 						deviceMap.put(deviceCount, PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount) + "." + PhidgetNames.AIN);

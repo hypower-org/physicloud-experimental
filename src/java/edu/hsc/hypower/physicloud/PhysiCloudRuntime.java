@@ -216,8 +216,16 @@ public class PhysiCloudRuntime {
 
 		return false;		
 	}
+	
+	public final ArrayList<String> listAllResources(){
+		ArrayList<String> resources = new ArrayList<String>();
+		
+		
+		
+		return resources;
+	}
 
-	public final void subscribeToResource(final String resourceName){
+	public final void subscribeToResource(final String resourceName, long updatePeriod, String ipAddr){
 		// TODO: for dynamic testing in clojure - may not be part of the final API.
 	}
 
