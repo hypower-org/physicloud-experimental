@@ -29,6 +29,7 @@ import io.vertx.core.Launcher;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.spi.cluster.ClusterManager;
@@ -246,15 +247,18 @@ public class PhysiCloudRuntime {
 					JsonObject resultReply = reply.result().body();
 					String channelName = resultReply.getString(JsonFieldNames.CHANNEL_NAME);
 					System.out.println("Subscribing to: " + channelName);
-					vertxHook.eventBus().consumer(channelName, new Handler<Message<DataMessage>>()	{
+//					MessageConsumer<DataMessage> consumer 
+//					Check this out for unsubscribing
+					
+							vertxHook.eventBus().consumer(channelName, new Handler<Message<DataMessage>>()	{
 
-						@Override
-						public void handle(Message<DataMessage> event) {
-							// TODO Auto-generated method stub
-							System.out.println(event.body());
-						}	
+								@Override
+								public void handle(Message<DataMessage> event) {
+									// TODO Auto-generated method stub
+									System.out.println(event.body());
+								}	
 
-					});
+							});
 
 				}
 
