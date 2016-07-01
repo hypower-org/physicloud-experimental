@@ -6,6 +6,8 @@ import edu.hsc.hypower.physicloud.KernelMapNames;
 import edu.hsc.hypower.physicloud.hw.PhidgetInterfaceKitVerticle;
 import edu.hsc.hypower.physicloud.hw.PhidgetNames;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
+import edu.hsc.hypower.physicloud.util.DataArray;
+import edu.hsc.hypower.physicloud.util.DataMessage;
 import edu.hsc.hypower.physicloud.util.DataTuple;
 
 import io.vertx.core.*;
@@ -222,7 +224,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 		JsonObject request = readReqMsg.body();
 		String requestingIpAddr = request.getString(JsonFieldNames.IP_ADDR);
-		final String reqResourceName = request.getString("Requested Resource");
+		final String reqResourceName = request.getString(JsonFieldNames.REQ_RES);
 		Integer resourceUpdatePeriod = request.getInteger(JsonFieldNames.UPDATE_TIME);
 
 		System.out.println("Asking for " + reqResourceName);
@@ -251,8 +253,12 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					@Override
 					public void handle(Long event) {
 						// TODO: Update with new data map structure
+						
+						LocalMap<String, DataArray> dataMap = vertx.sharedData().getLocalMap(deviceName);
+						DataMessage message = new DataMessage(deviceName, dataMap.get(deviceName).getData());
+						
 //						DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(deviceName).get(reqResourceName));
-//						vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
+						vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
 					}
 				});
 
