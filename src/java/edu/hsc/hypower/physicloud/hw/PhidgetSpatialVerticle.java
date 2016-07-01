@@ -10,6 +10,7 @@ import com.phidgets.event.GPSPositionChangeListener;
 
 import edu.hsc.hypower.physicloud.KernelChannels;
 import edu.hsc.hypower.physicloud.util.DataArray;
+import edu.hsc.hypower.physicloud.util.DataTuple;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
@@ -39,7 +40,7 @@ public class PhidgetSpatialVerticle extends AbstractVerticle{
 			});
 			sp.waitForAttachment();
 			count++;
-				
+
 		} catch (PhidgetException e) {
 			e.printStackTrace();
 		}
@@ -52,19 +53,26 @@ public class PhidgetSpatialVerticle extends AbstractVerticle{
 
 		try {
 			LocalMap<String, DataArray> spatialMap = vertx.sharedData().getLocalMap(verticleName + "." + count);
-
+			
+			// To further add functionality at some point we should verify that the values we collect are in the correct range
+			// TODO: Use getAccelerationMax() etc to check 
+			
 			int gAxisCount = sp.getGyroAxisCount();
 			int accelerationAxis = sp.getAccelerationAxisCount();
+			ArrayList<DataTuple> dataArr = new ArrayList<DataTuple>();
 
-//			for(int i = 0; i < accelerationAxis; i++)
-//			{				
-//				accelerationMap.put((Integer) i, sp.getAcceleration(i));
-//			}
-//
-//			for(int i = 0; i < gAxisCount; i++)
-//			{
-//				gyroMap.put((Integer) i, sp.getAngularRate(i)); 
-//			}
+			for(int i = 0; i < accelerationAxis; i++)
+			{				
+				dataArr.add(new DataTuple(new Float(sp.getAcceleration(i))));
+			}
+
+			for(int i = 0; i < gAxisCount; i++)
+			{
+				dataArr.add(new DataTuple(new Float(sp.getAcceleration(i))));
+			}
+			
+			spatialMap.put(verticleName + "." + count, new DataArray(dataArr));
+			
 		} catch (PhidgetException e) {
 			e.printStackTrace();
 		}
