@@ -260,8 +260,9 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
 					@Override
 					public void handle(Long event) {
-						DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(deviceName).get(reqResourceName));
-						vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
+						// TODO: Update with new data map structure
+//						DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(deviceName).get(reqResourceName));
+//						vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
 					}
 				});
 
