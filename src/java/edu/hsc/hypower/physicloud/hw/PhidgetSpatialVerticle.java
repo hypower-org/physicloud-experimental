@@ -51,16 +51,7 @@ public class PhidgetSpatialVerticle extends AbstractVerticle{
 	public final void updateSensorData(Long l){
 
 		try {
-<<<<<<< HEAD
-			
-			
-//			LocalMap<Integer, Double> accelerationMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.SPATIAL);
-//			LocalMap<Integer, Double> gyroMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.SPATIAL);
 
-=======
-			LocalMap<String, DataArray> accelerationMap = vertx.sharedData().getLocalMap(verticleName + "." + count);
-			
->>>>>>> ba42ee72ae98c61ce718e033dc3ee48858636011
 			int gAxisCount = sp.getGyroAxisCount();
 			int accelerationAxis = sp.getAccelerationAxisCount();
 
