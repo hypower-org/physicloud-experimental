@@ -17,6 +17,13 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 	private RFIDPhidget rfid;
 	private ArrayList<String> tagList;
 	private ArrayList<String> correctKeys;
+	private final String verticleName;
+	int count;
+	
+	public PhidgetRFIDVerticle(String n){
+		verticleName = n;
+		count = 0;
+	}
 
 
 	@Override
@@ -33,6 +40,7 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 				}
 			});
 			rfid.waitForAttachment();
+			count++;
 
 		} catch (PhidgetException e) {
 			e.printStackTrace();

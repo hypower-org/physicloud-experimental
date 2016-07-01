@@ -9,7 +9,7 @@ import com.phidgets.event.AttachListener;
 import com.phidgets.event.GPSPositionChangeListener;
 
 import edu.hsc.hypower.physicloud.KernelChannels;
-
+import edu.hsc.hypower.physicloud.util.DataArray;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
@@ -20,9 +20,11 @@ public class PhidgetSpatialVerticle extends AbstractVerticle{
 	private final String verticleName;
 	private final Long updatePeriod = 100l;
 	private SpatialPhidget sp;	
+	private int count; 
 
 	public PhidgetSpatialVerticle(String n){
 		verticleName = n;
+		count = 0; 
 	}
 
 	@Override
@@ -36,7 +38,8 @@ public class PhidgetSpatialVerticle extends AbstractVerticle{
 				}
 			});
 			sp.waitForAttachment();
-
+			count++;
+				
 		} catch (PhidgetException e) {
 			e.printStackTrace();
 		}
@@ -48,21 +51,20 @@ public class PhidgetSpatialVerticle extends AbstractVerticle{
 	public final void updateSensorData(Long l){
 
 		try {
-			LocalMap<Integer, Double> accelerationMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ACCELERATION);
-			LocalMap<Integer, Double> gyroMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.ACCELERATION);
+			LocalMap<String, DataArray> spatialMap = vertx.sharedData().getLocalMap(verticleName + "." + count);
 
 			int gAxisCount = sp.getGyroAxisCount();
 			int accelerationAxis = sp.getAccelerationAxisCount();
 
-			for(int i = 0; i < accelerationAxis; i++)
-			{				
-				accelerationMap.put((Integer) i, sp.getAcceleration(i));
-			}
-
-			for(int i = 0; i < gAxisCount; i++)
-			{
-				gyroMap.put((Integer) i, sp.getAngularRate(i)); 
-			}
+//			for(int i = 0; i < accelerationAxis; i++)
+//			{				
+//				accelerationMap.put((Integer) i, sp.getAcceleration(i));
+//			}
+//
+//			for(int i = 0; i < gAxisCount; i++)
+//			{
+//				gyroMap.put((Integer) i, sp.getAngularRate(i)); 
+//			}
 		} catch (PhidgetException e) {
 			e.printStackTrace();
 		}

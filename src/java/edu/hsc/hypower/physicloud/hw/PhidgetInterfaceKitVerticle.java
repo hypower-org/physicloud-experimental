@@ -1,5 +1,6 @@
 package edu.hsc.hypower.physicloud.hw;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import com.phidgets.*;
@@ -7,7 +8,8 @@ import com.phidgets.event.AttachEvent;
 import com.phidgets.event.AttachListener;
 
 import edu.hsc.hypower.physicloud.KernelChannels;
-
+import edu.hsc.hypower.physicloud.util.DataArray;
+import edu.hsc.hypower.physicloud.util.DataTuple;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
@@ -60,8 +62,8 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 
 	public final void updateSensorData(Long l) {
 
-		LocalMap<String, Float> ainDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.AIN);
-		LocalMap<String, Boolean> dinDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.DIN);
+		LocalMap<String, DataArray> ainDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.AIN);
+		LocalMap<String, DataArray> dinDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.DIN);
 		//		LocalMap<String, Boolean> douDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.DIN);
 
 		// TODO: As long as the keySet for each sub-device exists (not empty), then you place the data into a map
@@ -70,12 +72,15 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 		for(int i = 0; i < analogIn.keySet().size(); i++)	{
 
 			// We will deal with this later...for now just store the raw value.
-			float data;
+			DataArray data;
+			ArrayList<DataTuple> dList = new ArrayList<DataTuple>();
+			
 			try {
-				data = ikit.getSensorValue(i);
+				DataTuple dTuple = new DataTuple(ikit.getSensorValue(i));
+				dList.add(dTuple);
+				data = new DataArray(dList);
 				String sensorType = analogIn.get(new Integer(i));
 				ainDataMap.put(sensorType + "." + Integer.toString(i), data);
-				//				System.out.println(sensorType + "." + Integer.toString(i) + " : " + data);
 			} catch (PhidgetException pe) {
 				pe.printStackTrace();
 			}
@@ -86,11 +91,16 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 
 
 		for(int i = 0; i < digitalIn.keySet().size(); i++)	{
+			
+			DataArray data;
+			ArrayList<DataTuple> dList = new ArrayList<DataTuple>();
 
 			try {
-				// TODO: implement the same this as the AIN functionality.
-				boolean data = ikit.getInputState(i);
+				DataTuple dTuple = new DataTuple(ikit.getInputState(i));
+				dList.add(dTuple);
+				data = new DataArray(dList);
 				String sensorType = digitalIn.get(new Integer(i));
+				dinDataMap.put(sensorType + "." + Integer.toString(i), data);
 			} catch (PhidgetException pe) {
 				pe.printStackTrace();
 			}

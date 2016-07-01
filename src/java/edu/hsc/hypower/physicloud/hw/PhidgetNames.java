@@ -14,5 +14,6 @@ public final class PhidgetNames {
 	public static final String ALT_VEL = "altitudeVelocity";
 	public static final String ACCELERATION = "acceleration";
 	public static final String GYRO = "gyro";
+	public static final String SPATIAL = "spatial";
 
 }
