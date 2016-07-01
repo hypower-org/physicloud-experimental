@@ -10,8 +10,6 @@ public final class PhidgetNames {
 	public static final String AIN = "ain";
 	public static final String DIN = "din";
 	public static final String DOU = "dou";
-	public static final String LAT_LONG = "latitudeLongitude";
-	public static final String ALT_VEL = "altitudeVelocity";
 	public static final String ACCELERATION = "acceleration";
 	public static final String GYRO = "gyro";
 
