@@ -17,6 +17,8 @@ import edu.hsc.hypower.physicloud.core.HeartBeatVerticle;
 
 import clojure.lang.PersistentHashMap;
 import edu.hsc.hypower.physicloud.core.*;
+import edu.hsc.hypower.physicloud.util.DataMessage;
+import edu.hsc.hypower.physicloud.util.DataMessageCodec;
 import edu.hsc.hypower.physicloud.util.NeighborData;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
@@ -125,6 +127,7 @@ public class PhysiCloudRuntime {
 				if(asyncRes.succeeded()){
 					System.out.println("Clustered vertx launched.");
 					vertxHook = asyncRes.result();
+					vertxHook.eventBus().registerDefaultCodec(DataMessage.class, new DataMessageCodec());
 
 					vertxHook.eventBus().consumer(KernelChannels.KERNEL, new Handler<Message<JsonObject>>(){
 						@Override

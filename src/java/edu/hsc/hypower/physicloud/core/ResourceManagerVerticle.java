@@ -51,9 +51,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	private final long updatePeriod;
 	private final String ipAddress;
 	private final HashMap<String,Long> dataTransmitTimers;
-	// TODO: Do not make member variables.
-	//	private String devReq = new String();
-	//	private String sensReq = new String();
 
 	// This hashmap is for the counter, but I am still thinking on how to use it
 	private HashMap<String,Integer> deviceCounter;
@@ -241,23 +238,19 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		if(deviceName.compareTo(ResourceManagerVerticle.NO_DEVICE) != 0){
 			// Do all of the wonderful resource subscription logic!
 			readResReply.put("isAllowed", true);
-			// TODO: need a counter to keep track of the number of resource channels open for this device.
+			// TODO: Tweak counter 
 			i++;
 			deviceCounter.put(deviceName, i);
 			// Cache the selected device name for use in the data transmission later...
 			readResReply.put("channelName", reqResourceName + "@." + requestingIpAddr);		
 			long timerId = MIN_RESOURCE_UPDATE;
-			if(resourceUpdatePeriod <= MIN_RESOURCE_UPDATE)
+			if(resourceUpdatePeriod >= MIN_RESOURCE_UPDATE)
 			{
 				timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
 					@Override
 					public void handle(Long event) {
-						// TODO: Update with new data map structure
-						
 						LocalMap<String, DataArray> dataMap = vertx.sharedData().getLocalMap(deviceName);
-						DataMessage message = new DataMessage(deviceName, dataMap.get(deviceName).getData());
-						
-//						DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(deviceName).get(reqResourceName));
+						DataMessage message = new DataMessage(deviceName, dataMap.get(reqResourceName).getData());
 						vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
 					}
 				});
