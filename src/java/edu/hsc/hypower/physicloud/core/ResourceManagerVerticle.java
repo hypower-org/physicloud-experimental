@@ -53,7 +53,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	private final HashMap<String,Long> dataTransmitTimers;
 
 	// This hashmap is for the counter, but I am still thinking on how to use it
-	private HashMap<String,Integer> deviceCounter;
+	private HashMap<String,Integer> deviceCounter = new HashMap<String, Integer>();
 
 
 	private final static long MIN_RESOURCE_UPDATE = 10; // 10 ms; in the future might need to be dynamic based on traffic.
@@ -242,7 +242,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			i++;
 			deviceCounter.put(deviceName, i);
 			// Cache the selected device name for use in the data transmission later...
-			readResReply.put("channelName", reqResourceName + "@." + requestingIpAddr);		
+			readResReply.put(JsonFieldNames.CHANNEL_NAME, reqResourceName + "@." + ipAddress);
+			System.out.print("Creating channel: " + reqResourceName + "@." + ipAddress);
 			long timerId = MIN_RESOURCE_UPDATE;
 			if(resourceUpdatePeriod >= MIN_RESOURCE_UPDATE)
 			{
@@ -255,7 +256,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					}
 				});
 
-				dataTransmitTimers.put(readResReply.getString("channelName"), timerId);
+				dataTransmitTimers.put(readResReply.getString(JsonFieldNames.CHANNEL_NAME), timerId);
 			}
 
 			// TODO: At some point, we will need to handle the removal of the data transmission.

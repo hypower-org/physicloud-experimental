@@ -245,6 +245,7 @@ public class PhysiCloudRuntime {
 
 					JsonObject resultReply = reply.result().body();
 					String channelName = resultReply.getString(JsonFieldNames.CHANNEL_NAME);
+					System.out.println("Subscribing to: " + channelName);
 					vertxHook.eventBus().consumer(channelName, new Handler<Message<DataMessage>>()	{
 
 						@Override
