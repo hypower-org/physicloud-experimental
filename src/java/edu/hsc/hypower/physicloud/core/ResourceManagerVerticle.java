@@ -6,6 +6,8 @@ import edu.hsc.hypower.physicloud.KernelMapNames;
 import edu.hsc.hypower.physicloud.hw.PhidgetInterfaceKitVerticle;
 import edu.hsc.hypower.physicloud.hw.PhidgetNames;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
+import edu.hsc.hypower.physicloud.util.DataArray;
+import edu.hsc.hypower.physicloud.util.DataMessage;
 import edu.hsc.hypower.physicloud.util.DataTuple;
 
 import io.vertx.core.*;
@@ -49,12 +51,9 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 	private final long updatePeriod;
 	private final String ipAddress;
 	private final HashMap<String,Long> dataTransmitTimers;
-	// TODO: Do not make member variables.
-	//	private String devReq = new String();
-	//	private String sensReq = new String();
 
 	// This hashmap is for the counter, but I am still thinking on how to use it
-	private HashMap<String,Integer> deviceCounter;
+	private HashMap<String,Integer> deviceCounter = new HashMap<String, Integer>();
 
 
 	private final static long MIN_RESOURCE_UPDATE = 10; // 10 ms; in the future might need to be dynamic based on traffic.
@@ -222,7 +221,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 		JsonObject request = readReqMsg.body();
 		String requestingIpAddr = request.getString(JsonFieldNames.IP_ADDR);
-		final String reqResourceName = request.getString("Requested Resource");
+		final String reqResourceName = request.getString(JsonFieldNames.REQ_RES);
 		Integer resourceUpdatePeriod = request.getInteger(JsonFieldNames.UPDATE_TIME);
 
 		System.out.println("Asking for " + reqResourceName);
@@ -239,24 +238,25 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		if(deviceName.compareTo(ResourceManagerVerticle.NO_DEVICE) != 0){
 			// Do all of the wonderful resource subscription logic!
 			readResReply.put("isAllowed", true);
-			// TODO: need a counter to keep track of the number of resource channels open for this device.
+			// TODO: Tweak counter 
 			i++;
 			deviceCounter.put(deviceName, i);
 			// Cache the selected device name for use in the data transmission later...
-			readResReply.put("channelName", reqResourceName + "@." + requestingIpAddr);		
+			readResReply.put(JsonFieldNames.CHANNEL_NAME, reqResourceName + "@." + ipAddress);
+			System.out.print("Creating channel: " + reqResourceName + "@." + ipAddress);
 			long timerId = MIN_RESOURCE_UPDATE;
-			if(resourceUpdatePeriod <= MIN_RESOURCE_UPDATE)
+			if(resourceUpdatePeriod >= MIN_RESOURCE_UPDATE)
 			{
 				timerId = vertx.setPeriodic(resourceUpdatePeriod, new Handler<Long>(){
 					@Override
 					public void handle(Long event) {
-						// TODO: Update with new data map structure
-//						DataTuple message = new DataTuple(vertx.sharedData().getLocalMap(deviceName).get(reqResourceName));
-//						vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
+						LocalMap<String, DataArray> dataMap = vertx.sharedData().getLocalMap(deviceName);
+						DataMessage message = new DataMessage(deviceName, dataMap.get(reqResourceName).getData());
+						vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
 					}
 				});
 
-				dataTransmitTimers.put(readResReply.getString("channelName"), timerId);
+				dataTransmitTimers.put(readResReply.getString(JsonFieldNames.CHANNEL_NAME), timerId);
 			}
 
 			// TODO: At some point, we will need to handle the removal of the data transmission.
