@@ -27,7 +27,7 @@ public final class NeighborData implements Shareable{
 	}
 	
 	public final HashMap<String, ArrayList<String>> getDeviceData() {
-		return deviceData;
+		return new HashMap<String,ArrayList<String>>(deviceData);
 	}
 	
 }

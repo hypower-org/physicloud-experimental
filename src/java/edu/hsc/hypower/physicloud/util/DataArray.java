@@ -17,7 +17,7 @@ public final class DataArray implements Shareable{
 
 
 	public final ArrayList<DataTuple> getData() {
-		return dataArray;
+		return new ArrayList<DataTuple>(dataArray);
 	}
 
 
