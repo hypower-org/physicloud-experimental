@@ -16,6 +16,8 @@ import edu.hsc.hypower.physicloud.util.DataTuple;
 
 public class PhidgetRFIDVerticle extends AbstractVerticle {
 
+	private final static String NO_TAG = "NO_TAG";
+	
 	private RFIDPhidget rfid;
 	private final String verticleName;
 	int count;
@@ -42,7 +44,7 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 		rfid.setLEDOn(false);
 		LocalMap<String, DataArray> rfidMap = vertx.sharedData().getLocalMap(verticleName);
 		DataTuple tagDetectData = new DataTuple(new Boolean(false));
-		DataTuple tagId = new DataTuple("");
+		DataTuple tagId = new DataTuple(PhidgetRFIDVerticle.NO_TAG);
 		ArrayList<DataTuple> initDataTuples = new ArrayList<DataTuple>();
 		initDataTuples.add(tagDetectData);
 		initDataTuples.add(tagId);
@@ -57,6 +59,7 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 				ArrayList<DataTuple> updatedDataTuples = new ArrayList<DataTuple>();
 				updatedDataTuples.add(tagDetectData);
 				updatedDataTuples.add(tagId);
+				System.out.println("New RFID data :" + updatedDataTuples);
 				rfidMap.put("rfid", new DataArray(updatedDataTuples));
 			}
 			
@@ -66,12 +69,12 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 
 			@Override
 			public void tagLost(TagLossEvent tle) {
-				System.out.println(tle.getValue());
 				DataTuple tagDetectData = new DataTuple(new Boolean(false));
-				DataTuple tagId = new DataTuple(tle.getValue());
+				DataTuple tagId = new DataTuple(PhidgetRFIDVerticle.NO_TAG);
 				ArrayList<DataTuple> updatedDataTuples = new ArrayList<DataTuple>();
 				updatedDataTuples.add(tagDetectData);
 				updatedDataTuples.add(tagId);
+				System.out.println("New RFID data :" + updatedDataTuples);
 				rfidMap.put("rfid", new DataArray(updatedDataTuples));
 			}
 			

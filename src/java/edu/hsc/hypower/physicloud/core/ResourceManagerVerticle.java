@@ -137,15 +137,15 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					String phidgetIKITName = PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount);
 					int deviceCount = 0; 
 					if(hasAin){
-						deviceMap.put(deviceCount, PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount) + "." + PhidgetNames.AIN);
+						deviceMap.put(deviceCount, phidgetIKITName + "." + PhidgetNames.AIN);
 						deviceCount++;
 					}
 					if(hasDin){
-						deviceMap.put(deviceCount, PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount) + "." + PhidgetNames.DIN);
+						deviceMap.put(deviceCount, phidgetIKITName + "." + PhidgetNames.DIN);
 						deviceCount++;
 					}
 					if(hasDou){
-						deviceMap.put(deviceCount, PhidgetNames.PHIDGET_IKIT + Integer.toString(hwCount) + "." + PhidgetNames.DOU);
+						deviceMap.put(deviceCount, phidgetIKITName + "." + PhidgetNames.DOU);
 						deviceCount++;
 					}
 
@@ -176,11 +176,11 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				if(deviceName.equals(PhidgetNames.PHIDGET_RFID))
 				{
 					int deviceCount = 0;
-					System.out.println("RFID Id " + PhidgetNames.PHIDGET_RFID + "." + Integer.toString(deviceCount));
-					deviceMap.put(deviceCount, PhidgetNames.PHIDGET_RFID + Integer.toString(deviceCount));
+					String rfidStringName = PhidgetNames.PHIDGET_RFID + "." + Integer.toString(deviceCount);
+					deviceMap.put(deviceCount, rfidStringName);
 					deviceCount++;
 
-					vertx.deployVerticle(new PhidgetRFIDVerticle(PhidgetNames.PHIDGET_RFID), 
+					vertx.deployVerticle(new PhidgetRFIDVerticle(rfidStringName), 
 							new DeploymentOptions().setWorker(true), 
 							new Handler<AsyncResult<String>>(){
 
