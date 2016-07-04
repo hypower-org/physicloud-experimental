@@ -60,12 +60,9 @@ public class DataTuple {
 	}
 
 	public static final DataTuple fromString(String s){
-	
 		String[] parseTuple = s.substring(1,s.length()-1).split(",");
-		System.out.println(parseTuple[0]);
 		DataTuple tup = new DataTuple(parseTuple[0], parseTuple[1]);
 		return tup;
-		
 	}
 	
 	

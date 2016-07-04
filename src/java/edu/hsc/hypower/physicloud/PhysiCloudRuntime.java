@@ -20,6 +20,7 @@ import clojure.lang.PersistentHashMap;
 import edu.hsc.hypower.physicloud.core.*;
 import edu.hsc.hypower.physicloud.util.DataMessage;
 import edu.hsc.hypower.physicloud.util.DataMessageCodec;
+import edu.hsc.hypower.physicloud.util.DataTuple;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
 import edu.hsc.hypower.physicloud.util.NeighborData;
 import io.vertx.core.AbstractVerticle;
@@ -104,6 +105,10 @@ public class PhysiCloudRuntime {
 				if(asyncRes.succeeded()){
 					System.out.println("Clustered vertx launched.");
 					vertxHook = asyncRes.result();
+					
+					String nodeId = mgr.getNodeID();
+					System.out.println("Cluster node id = " + nodeId);
+					
 					vertxHook.eventBus().registerDefaultCodec(DataMessage.class, new DataMessageCodec());
 
 					vertxHook.eventBus().consumer(KernelChannels.KERNEL, new Handler<Message<JsonObject>>(){
@@ -248,9 +253,14 @@ public class PhysiCloudRuntime {
 							vertxHook.eventBus().consumer(channelName, new Handler<Message<DataMessage>>()	{
 
 								@Override
-								public void handle(Message<DataMessage> event) {
-									// TODO Auto-generated method stub
-									System.out.println(event.body());
+								public void handle(Message<DataMessage> incomingMsg) {
+									
+									ArrayList<DataTuple> dataTuples = incomingMsg.body().getTupleList();
+									System.out.println("Received Data: ");
+									for(DataTuple dt : dataTuples){
+										System.out.print( dt + " ");
+									}
+									System.out.print("\n");
 								}	
 
 							});

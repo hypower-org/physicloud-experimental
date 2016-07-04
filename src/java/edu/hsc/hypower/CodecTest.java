@@ -38,7 +38,7 @@ public class CodecTest {
 				// TODO Auto-generated method stub
 				DataMessage msg = event.body();
 				System.out.println(msg.getId());
-				for(DataTuple dt : msg.getList()){
+				for(DataTuple dt : msg.getTupleList()){
 					System.out.println(dt);
 				}
 				

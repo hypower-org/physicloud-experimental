@@ -27,12 +27,11 @@ public class DataMessage {
 		return id;
 	}
 	
-	public ArrayList<DataTuple> getList()	{
-		return tupleList;
+	public ArrayList<DataTuple> getTupleList()	{
+		return new ArrayList<DataTuple>(tupleList);
 	}
 	
 	public int getLength()	{
-		
 		return tupleList.size();
 	}
 }

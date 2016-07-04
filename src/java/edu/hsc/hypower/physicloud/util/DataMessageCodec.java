@@ -17,7 +17,7 @@ public class DataMessageCodec implements MessageCodec<DataMessage, DataMessage>{
 		jsonToEncode.put("id", msg.getId());
 		JsonArray tupleArray = new JsonArray();
 
-		ArrayList<DataTuple> tupleList = msg.getList();
+		ArrayList<DataTuple> tupleList = msg.getTupleList();
 
 		for(int i = 0; i < tupleList.size(); i++) {
 			tupleArray.add(tupleList.get(i).toString());
