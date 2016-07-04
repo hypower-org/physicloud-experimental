@@ -43,14 +43,12 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 			// TODO: need to handle HW attachment better!
 			//			long startTime = System.currentTimeMillis();
 			ikit.openAny();
-			ikit.addAttachListener(new AttachListener() {
-				public void attached(AttachEvent ae)	{
-					System.out.println("A new Phidget IKIT has been attached.");
-				}
-			});
+//			ikit.addAttachListener(new AttachListener() {
+//				public void attached(AttachEvent ae)	{
+//					System.out.println("A new Phidget IKIT has been attached.");
+//				}
+//			});
 			ikit.waitForAttachment();
-			//			long endTime   = System.currentTimeMillis();
-			//			System.out.println(endTime - startTime);
 
 		} catch (PhidgetException e) {
 			e.printStackTrace();
@@ -64,11 +62,10 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 
 		LocalMap<String, DataArray> ainDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.AIN);
 		LocalMap<String, DataArray> dinDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.DIN);
-		//		LocalMap<String, Boolean> douDataMap = vertx.sharedData().getLocalMap(verticleName + "." + PhidgetNames.DIN);
 
-		// TODO: As long as the keySet for each sub-device exists (not empty), then you place the data into a map
+		// As long as the keySet for each sub-device exists (not empty), then you place the data into a map
 		// with the name:
-		// name + "." + sub-device name -- see my new PhidgetNames class that holds the AIN, DIN, DOU.
+		// name + "." + sub-device name
 		for(int i = 0; i < analogIn.keySet().size(); i++)	{
 
 			// We will deal with this later...for now just store the raw value.

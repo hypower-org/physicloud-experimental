@@ -5,6 +5,7 @@ import edu.hsc.hypower.physicloud.KernelChannels;
 import edu.hsc.hypower.physicloud.KernelMapNames;
 import edu.hsc.hypower.physicloud.hw.PhidgetInterfaceKitVerticle;
 import edu.hsc.hypower.physicloud.hw.PhidgetNames;
+import edu.hsc.hypower.physicloud.hw.PhidgetRFIDVerticle;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
 import edu.hsc.hypower.physicloud.util.DataArray;
 import edu.hsc.hypower.physicloud.util.DataMessage;
@@ -80,6 +81,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			if(deviceKey.indexOf('.') != -1)
 			{
 				String deviceName = deviceKey.substring(deviceKey.indexOf('.')+1);	
+				System.out.println(deviceName);
 
 				//	IKIT SECTION. CREATE THREE MAPS
 				if(deviceName.equals(PhidgetNames.PHIDGET_IKIT))
@@ -173,10 +175,29 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 				if(deviceName.equals(PhidgetNames.PHIDGET_RFID))
 				{
-					//TODO: EXPAND THIS FUNCTIONALITY 
-					// specify for phidget RFID
+					int deviceCount = 0;
+					System.out.println("RFID Id " + PhidgetNames.PHIDGET_RFID + "." + Integer.toString(deviceCount));
+					deviceMap.put(deviceCount, PhidgetNames.PHIDGET_RFID + Integer.toString(deviceCount));
+					deviceCount++;
+
+					vertx.deployVerticle(new PhidgetRFIDVerticle(PhidgetNames.PHIDGET_RFID), 
+							new DeploymentOptions().setWorker(true), 
+							new Handler<AsyncResult<String>>(){
+
+						@Override
+						public void handle(AsyncResult<String> res) {
+							if(!res.succeeded()){
+								System.err.println("Error deploying PhidgetRFIDVerticle! TODO: Handle this issue.");
+							}
+							else{
+								System.out.println("PhidgetRFIDVerticle deployed: " + res.result());
+							}
+
+						}
+
+					});
 				}
-				
+
 				if(deviceName.equals(PhidgetNames.PHIDGET_SPATIAL)){
 					//TODO: EXPAND THIS FUNCTIONALITY 
 					// specify for phidget Spatial
@@ -251,7 +272,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					@Override
 					public void handle(Long event) {
 						LocalMap<String, DataArray> dataMap = vertx.sharedData().getLocalMap(deviceName);
-						DataMessage message = new DataMessage(deviceName, dataMap.get(reqResourceName).getData());
+						DataMessage message = new DataMessage(deviceName, dataMap.get(reqResourceName).getDataTuples());
 						vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
 					}
 				});

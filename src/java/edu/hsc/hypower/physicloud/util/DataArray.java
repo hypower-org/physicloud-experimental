@@ -16,7 +16,7 @@ public final class DataArray implements Shareable{
 	}
 
 
-	public final ArrayList<DataTuple> getData() {
+	public final ArrayList<DataTuple> getDataTuples() {
 		return new ArrayList<DataTuple>(dataArray);
 	}
 
@@ -32,7 +32,7 @@ public final class DataArray implements Shareable{
 
 		DataArray arr = new DataArray(tupleList);
 
-		ArrayList<DataTuple> moreTesting = arr.getData();
+		ArrayList<DataTuple> moreTesting = arr.getDataTuples();
 
 		for(int i = 0; i < moreTesting.size(); i++)	{
 			System.out.println(moreTesting.get(i).getType());

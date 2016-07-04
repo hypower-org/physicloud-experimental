@@ -1,28 +1,36 @@
 package edu.hsc.hypower.physicloud.hw;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.shareddata.LocalMap;
 
 import java.util.ArrayList;
 
 import com.phidgets.*;
-import com.phidgets.event.AttachEvent;
-import com.phidgets.event.AttachListener;
-import com.phidgets.event.TagGainEvent;
-import com.phidgets.event.TagGainListener;
-import com.phidgets.event.TagLossEvent;
-import com.phidgets.event.TagLossListener;
+import com.phidgets.event.*;
+
+import edu.hsc.hypower.physicloud.util.DataArray;
+import edu.hsc.hypower.physicloud.util.DataTuple;
 
 public class PhidgetRFIDVerticle extends AbstractVerticle {
 
 	private RFIDPhidget rfid;
-	private ArrayList<String> tagList;
-	private ArrayList<String> correctKeys;
 	private final String verticleName;
 	int count;
-	
-	public PhidgetRFIDVerticle(String n){
-		verticleName = n;
+
+	public PhidgetRFIDVerticle(String name){
+		verticleName = name;
 		count = 0;
+		
+		try {
+			rfid = new RFIDPhidget();
+			rfid.openAny();
+			rfid.waitForAttachment();
+		} catch (PhidgetException e) {
+			e.printStackTrace();
+		}
 	}
 
 
@@ -30,51 +38,46 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		super.start();
 
-		correctKeys.add("1000e0a20a");		
+		rfid.setAntennaOn(true);
+		rfid.setLEDOn(false);
+		LocalMap<String, DataArray> rfidMap = vertx.sharedData().getLocalMap(verticleName);
+		DataTuple tagDetectData = new DataTuple(new Boolean(false));
+		DataTuple tagId = new DataTuple("");
+		ArrayList<DataTuple> initDataTuples = new ArrayList<DataTuple>();
+		initDataTuples.add(tagDetectData);
+		initDataTuples.add(tagId);
+		rfidMap.put("rfid", new DataArray(initDataTuples));
+		
+		rfid.addTagGainListener(new TagGainListener(){
 
-		try{
-			rfid = new RFIDPhidget();
-			rfid.addAttachListener(new AttachListener() {
-				public void attached(AttachEvent ae)	{
-					System.out.println("A new RFID Reader has been attached.");
-				}
-			});
-			rfid.waitForAttachment();
-			count++;
-
-		} catch (PhidgetException e) {
-			e.printStackTrace();
-		}
-
-		rfid.addTagGainListener(new TagGainListener()
-		{
-			public void tagGained(TagGainEvent oe)
-			{
-				for(String s : correctKeys)
-				{
-					if(oe.getValue() == s)   //This is the ID of one of the white cards 
-					{
-						System.out.println("Menu Unlocked");
-					}
-					else
-						System.out.println("Improper RFID Tag");
-
-				}
+			@Override
+			public void tagGained(TagGainEvent tge) {
+				DataTuple tagDetectData = new DataTuple(new Boolean(true));
+				DataTuple tagId = new DataTuple(tge.getValue());
+				ArrayList<DataTuple> updatedDataTuples = new ArrayList<DataTuple>();
+				updatedDataTuples.add(tagDetectData);
+				updatedDataTuples.add(tagId);
+				rfidMap.put("rfid", new DataArray(updatedDataTuples));
 			}
+			
 		});
+		
+		rfid.addTagLossListener(new TagLossListener(){
 
-		//		rfid.addTagLossListener(new TagLossListener()
-		//		{
-		//			public void tagLost(TagLossEvent oe)
-		//			{
-		//				System.out.println(oe);
-		//			}
-		//		});
-
-
+			@Override
+			public void tagLost(TagLossEvent tle) {
+				System.out.println(tle.getValue());
+				DataTuple tagDetectData = new DataTuple(new Boolean(false));
+				DataTuple tagId = new DataTuple(tle.getValue());
+				ArrayList<DataTuple> updatedDataTuples = new ArrayList<DataTuple>();
+				updatedDataTuples.add(tagDetectData);
+				updatedDataTuples.add(tagId);
+				rfidMap.put("rfid", new DataArray(updatedDataTuples));
+			}
+			
+		});
+		
 	}
-
-
 
 	@Override
 	public void stop() throws Exception {
@@ -82,5 +85,25 @@ public class PhidgetRFIDVerticle extends AbstractVerticle {
 		super.stop();
 	}
 
+	public static void main(String[] args){
+		
+		Vertx vertx = Vertx.factory.vertx();
+		vertx.deployVerticle(new PhidgetRFIDVerticle("RFID.0"), new Handler<AsyncResult<String>>(){
+			@Override
+			public void handle(AsyncResult<String> event) {
+				System.out.println(PhidgetRFIDVerticle.class.getName() + " Started!");
+				
+			}
+		});
+		
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		vertx.close();
+	}
 
 }
