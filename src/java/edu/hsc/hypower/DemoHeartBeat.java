@@ -113,8 +113,8 @@ public class DemoHeartBeat extends AbstractVerticle {
 		float humData;
 		
 		System.out.println(ipAddr + " alive.");
-		System.out.println("Temperature in Room x: " + tempData);
-		System.out.print("Humidity in Room x: " + humData);
+//		System.out.println("Temperature in Room x: " + tempData);
+//		System.out.print("Humidity in Room x: " + humData);
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfoMsg);
 	}
 
