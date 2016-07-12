@@ -109,8 +109,8 @@ public class DemoHeartBeat extends AbstractVerticle {
 			hbInfoMsg.put(deviceMap.get(i), sensorArray);
 		}
 		
-		float tempData;
-		float humData;
+//		float tempData;
+//		float humData;
 		
 		System.out.println(ipAddr + " alive.");
 //		System.out.println("Temperature in Room x: " + tempData);
