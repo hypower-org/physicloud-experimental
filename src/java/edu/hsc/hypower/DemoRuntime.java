@@ -128,7 +128,7 @@ public class DemoRuntime {
 						}
 					});
 
-					vertxHook.deployVerticle(new HeartBeatVerticle(nodeIp, heartBeatPeriod), 
+					vertxHook.deployVerticle(new DemoHeartBeat(nodeIp, heartBeatPeriod), 
 							new DeploymentOptions().setWorker(true), 
 							new Handler<AsyncResult<String>>(){
 

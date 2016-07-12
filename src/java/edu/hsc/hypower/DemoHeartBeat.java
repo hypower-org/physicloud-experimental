@@ -82,7 +82,7 @@ public class DemoHeartBeat extends AbstractVerticle {
 
 	/**
 	 * Creates the heartbeat message for this cyber-physical unit and publishes it to all other CPUs.
-	 * @param timerEvent
+	 *HeartBeatVerticle @param timerEvent
 	 */
 	private final void handleHeartbeat(Long timerEvent){
 
@@ -108,7 +108,13 @@ public class DemoHeartBeat extends AbstractVerticle {
 			localResourceMap.put(deviceName, localResources);
 			hbInfoMsg.put(deviceMap.get(i), sensorArray);
 		}
+		
+		float tempData;
+		float humData;
+		
 		System.out.println(ipAddr + " alive.");
+		System.out.println("Temperature in Room x: " + tempData);
+		System.out.print("Humidity in Room x: " + humData);
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfoMsg);
 	}
 
