@@ -95,7 +95,7 @@ public class DemoHeartBeat extends AbstractVerticle {
 		LocalMap<String, String> localResourceMap = vertx.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 
 		JsonArray sensorArray = new JsonArray();
-		// Collect each device's resource information and store locally and transmit to neigbors.
+		// Collect each device's resource information and store locally and transmit to neighbors.
 		for(int i = 0; i < deviceMap.size(); i++){
 			sensorArray.clear();
 			String deviceName = deviceMap.get(i);
