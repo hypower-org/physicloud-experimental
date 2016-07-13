@@ -6,12 +6,4 @@
     "heartBeatPeriod" : 2000,
 
 
-    "device.PhidgetIKit":		{
-				    
-
-			"ain.1" : "humidity",
-			"ain.0" : "temperature"
-
-		}
-
 }

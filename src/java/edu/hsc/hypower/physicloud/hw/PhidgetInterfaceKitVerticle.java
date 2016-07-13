@@ -78,7 +78,6 @@ public class PhidgetInterfaceKitVerticle extends AbstractVerticle {
 				data = new DataArray(dList);
 				String sensorType = analogIn.get(new Integer(i));
 				ainDataMap.put(sensorType + "." + Integer.toString(i), data);
-				System.out.println(sensorType + "." + Integer.toString(i));
 			} catch (PhidgetException pe) {
 				pe.printStackTrace();
 			}
