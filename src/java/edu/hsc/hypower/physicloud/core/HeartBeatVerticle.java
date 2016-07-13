@@ -115,7 +115,7 @@ public class HeartBeatVerticle extends AbstractVerticle {
 			localResourceMap.put(deviceName, localResources);
 			hbInfoMsg.put(deviceMap.get(i), sensorArray);
 		}
-		System.out.println(ipAddr + " alive.");
+		System.out.println(ipAddr + " is alive.");
 		vertx.eventBus().publish(KernelChannels.HEARTBEAT, hbInfoMsg);
 	}
 
