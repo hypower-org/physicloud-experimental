@@ -294,7 +294,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 	}
 
-	private final void stopDataTransmission(){
+	private final void stopDataTransmission(String channelName){
 
 	}
 
