@@ -207,6 +207,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 		}
 		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.RESOURCE_QUERY, this::handleResourceQuery);
 		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.READ_REQUEST, this::handleReadRequest);
+		vertx.eventBus().consumer(ipAddress + "." + KernelChannels.RESOURCE_UNSUB, this::handleUnsubscribe);
 	}
 
 	//Returns if a resource is a available
@@ -294,7 +295,9 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 	}
 
-	private final void stopDataTransmission(String channelName){
+	private final void handleUnsubscribe(Message<JsonObject> readReqMsg){
+		Long chanID = dataTransmitTimers.remove(readReqMsg.body().getValue(JsonFieldNames.UNSUB));
+		vertx.cancelTimer(chanID);
 
 	}
 
