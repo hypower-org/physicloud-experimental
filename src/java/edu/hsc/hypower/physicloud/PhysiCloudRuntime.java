@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,6 +53,8 @@ public class PhysiCloudRuntime {
 	private String deviceLocation;
 	private String secCode;
 	private long heartBeatPeriod;
+
+	private ArrayList<MessageConsumer<DataMessage>> dataConsumers;
 
 	private static final String STOP = "isTimeToStop";
 	private static final String IPADDR = "ipAddr";
@@ -105,10 +108,10 @@ public class PhysiCloudRuntime {
 				if(asyncRes.succeeded()){
 					System.out.println("Clustered vertx launched.");
 					vertxHook = asyncRes.result();
-					
+
 					String nodeId = mgr.getNodeID();
 					System.out.println("Cluster node id = " + nodeId);
-					
+
 					vertxHook.eventBus().registerDefaultCodec(DataMessage.class, new DataMessageCodec());
 
 					vertxHook.eventBus().consumer(KernelChannels.KERNEL, new Handler<Message<JsonObject>>(){
@@ -193,7 +196,7 @@ public class PhysiCloudRuntime {
 
 	public final boolean isResourceAvailable(final String resourceName){
 
-		
+
 		LocalMap<String, String> localResourceMap = vertxHook.sharedData().getLocalMap(KernelMapNames.RESOURCES);
 		LocalMap<String, NeighborData> neighborMap = vertxHook.sharedData().getLocalMap(KernelMapNames.NEIGHBORS);
 
@@ -206,7 +209,7 @@ public class PhysiCloudRuntime {
 				}
 			}
 		}
-		
+
 		// Then look at what your neighbors have...
 		for(String neighborIp : neighborMap.keySet()){
 			final HashMap<String, ArrayList<String>> neighborDeviceMap = neighborMap.get(neighborIp).getDeviceData();
@@ -230,6 +233,39 @@ public class PhysiCloudRuntime {
 		return resources;
 	}
 
+
+	public final void unsubscribeFromResource(String chanName)	{
+		JsonObject unsubMsg = new JsonObject();
+		unsubMsg.put(JsonFieldNames.UNSUB, chanName);
+
+		
+		Optional<MessageConsumer<DataMessage>> consumer = dataConsumers.stream()
+				.filter(mc ->
+				{
+					if(mc.address().equals(chanName))
+					{
+
+						return true;
+
+					}
+
+					else
+					{
+						return false;
+					}
+				})
+				.findFirst();
+		
+		if(consumer.isPresent())
+		{
+			MessageConsumer<DataMessage> toRemove = consumer.get();
+			String ipAddr = chanName.substring(chanName.indexOf("@"), chanName.length() -1);
+			vertxHook.eventBus().send(ipAddr + "." + KernelChannels.RESOURCE_UNSUB, unsubMsg);
+			dataConsumers.remove(toRemove);
+			
+		}
+	}
+
 	public final void subscribeToResource(final String resourceName, long updatePeriod, String ipAddr){
 		// TODO: for dynamic testing in clojure - may not be part of the final API.
 		JsonObject requestMsg = new JsonObject();
@@ -247,23 +283,27 @@ public class PhysiCloudRuntime {
 					JsonObject resultReply = reply.result().body();
 					String channelName = resultReply.getString(JsonFieldNames.CHANNEL_NAME);
 					System.out.println("Subscribing to: " + channelName);
-//					MessageConsumer<DataMessage> consumer 
-//					Check this out for unsubscribing
-					
-							vertxHook.eventBus().consumer(channelName, new Handler<Message<DataMessage>>()	{
 
-								@Override
-								public void handle(Message<DataMessage> incomingMsg) {
-									
-									ArrayList<DataTuple> dataTuples = incomingMsg.body().getTupleList();
-									System.out.println("Received Data: ");
-									for(DataTuple dt : dataTuples){
-										System.out.print( dt + " ");
-									}
-									System.out.print("\n");
-								}	
+					// Create MessageConsumer to add to ArrayList
+					MessageConsumer<DataMessage> consumer;
 
-							});
+
+					consumer = vertxHook.eventBus().consumer(channelName, new Handler<Message<DataMessage>>()	{
+
+						@Override
+						public void handle(Message<DataMessage> incomingMsg) {
+
+							ArrayList<DataTuple> dataTuples = incomingMsg.body().getTupleList();
+							System.out.println("Received Data: ");
+							for(DataTuple dt : dataTuples){
+								System.out.print( dt + " ");
+							}
+							System.out.print("\n");
+						}	
+
+					});
+					// Is this add in the right place?
+					dataConsumers.add(consumer);
 
 				}
 

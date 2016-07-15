@@ -15,5 +15,6 @@ public final class KernelChannels {
 	public static final String RESOURCE_QUERY = "kernel.resquery";
 	public static final String READ_REQUEST = "kernel.readreq";
 	public static final String WRITE_REQUEST = "kernel.writereq";
+	public static final String RESOURCE_UNSUB = "kernel.resunsub";
 	
 }

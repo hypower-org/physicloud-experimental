@@ -10,5 +10,6 @@ public final class JsonFieldNames {
 	public static final String REQ_RES = "reqResource";
 	public static final String UPDATE_TIME = "updateTime";
 	public static final String CHANNEL_NAME = "Channel Name";
+	public static final String UNSUB = "Unsubscribe";
 
 }
