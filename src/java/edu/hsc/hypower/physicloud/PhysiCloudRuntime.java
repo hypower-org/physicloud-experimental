@@ -273,6 +273,7 @@ public class PhysiCloudRuntime {
 		requestMsg.put(JsonFieldNames.IP_ADDR, ipAddr);
 		requestMsg.put(JsonFieldNames.UPDATE_TIME, updatePeriod);
 		requestMsg.put(JsonFieldNames.REQ_RES, resourceName);
+		
 
 		vertxHook.eventBus().send(ipAddr + "." + KernelChannels.READ_REQUEST, requestMsg, new Handler<AsyncResult<Message<JsonObject>>>() {
 
@@ -282,14 +283,11 @@ public class PhysiCloudRuntime {
 				if(reply.succeeded()){
 
 					JsonObject resultReply = reply.result().body();
-					String channelName = resultReply.getString(JsonFieldNames.CHANNEL_NAME);	
-
+					String channelName = resultReply.getString(JsonFieldNames.CHANNEL_NAME);
 					System.out.println("Subscribing to: " + channelName);
 
 					// Create MessageConsumer to add to ArrayList
-
-
-
+					
 					MessageConsumer<DataMessage> consumer = vertxHook.eventBus().consumer(channelName, new Handler<Message<DataMessage>>()	{
 
 						@Override
@@ -304,19 +302,17 @@ public class PhysiCloudRuntime {
 						}	
 
 					});
-
-
-					dataConsumers.add(consumer);
-
-
+						dataConsumers.add(consumer);
 				}
 
 				else{
 					System.out.println("Reply did not succeed...");
+				
 				}
-
+				
 			}
 		});
+		
 	}
 
 	public final void deployFunction(final String fnName, final String fn, long updatePeriod){

@@ -264,8 +264,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 			i++;
 			deviceCounter.put(deviceName, i);
 			// Cache the selected device name for use in the data transmission later...
-			readResReply.put(JsonFieldNames.CHANNEL_NAME, reqResourceName + "@." + ipAddress);
-			System.out.print("Creating channel: " + reqResourceName + "@." + ipAddress);
+			readResReply.put(JsonFieldNames.CHANNEL_NAME, reqResourceName + "@" + ipAddress);
+			System.out.print("Creating channel: " + reqResourceName + "@" + ipAddress);
 			long timerId = MIN_RESOURCE_UPDATE;
 			if(resourceUpdatePeriod >= MIN_RESOURCE_UPDATE)
 			{
@@ -274,7 +274,7 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					public void handle(Long event) {
 						LocalMap<String, DataArray> dataMap = vertx.sharedData().getLocalMap(deviceName);
 						DataMessage message = new DataMessage(deviceName, dataMap.get(reqResourceName).getDataTuples());
-						vertx.eventBus().publish(reqResourceName + "@." + ipAddress, message);
+						vertx.eventBus().publish(reqResourceName + "@" + ipAddress, message);
 					}
 				});
 
