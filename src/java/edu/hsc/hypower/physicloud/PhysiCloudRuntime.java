@@ -237,13 +237,14 @@ public class PhysiCloudRuntime {
 	public final void unsubscribeFromResource(String chanName)	{
 		JsonObject unsubMsg = new JsonObject();
 		unsubMsg.put(JsonFieldNames.UNSUB, chanName);
-
+		System.out.println("Channel name: " + chanName);
 		
 		Optional<MessageConsumer<DataMessage>> consumer = dataConsumers.stream()
 				.filter(mc ->
 				{
 					if(mc.address().equals(chanName))
 					{
+						System.out.println("Address name: " + mc.address());
 
 						return true;
 
@@ -261,7 +262,8 @@ public class PhysiCloudRuntime {
 			MessageConsumer<DataMessage> toRemove = consumer.get();
 			vertxHook.eventBus().send(KernelChannels.RESOURCE_UNSUB, unsubMsg);
 			dataConsumers.remove(toRemove);
-			toRemove.unregister(); 					// double check
+			toRemove.unregister(); 	
+			System.out.println("Unsubscribed from resource!");
 		}
 	}
 
