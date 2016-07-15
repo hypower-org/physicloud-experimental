@@ -259,10 +259,9 @@ public class PhysiCloudRuntime {
 		if(consumer.isPresent())
 		{
 			MessageConsumer<DataMessage> toRemove = consumer.get();
-			String ipAddr = chanName.substring(chanName.indexOf("@"), chanName.length() -1);
-			vertxHook.eventBus().send(ipAddr + "." + KernelChannels.RESOURCE_UNSUB, unsubMsg);
+			vertxHook.eventBus().send(KernelChannels.RESOURCE_UNSUB, unsubMsg);
 			dataConsumers.remove(toRemove);
-			
+			toRemove.unregister(); 					// double check
 		}
 	}
 
