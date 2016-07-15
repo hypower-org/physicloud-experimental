@@ -64,7 +64,7 @@ public class PhysiCloudRuntime {
 		ObjectMapper mapper = new ObjectMapper();
 
 		rootNode = mapper.readTree(new File(configFileName + ".json"));
-
+		dataConsumers = new ArrayList<MessageConsumer<DataMessage>>();
 		// retrieve IP
 		nodeIp = rootNode.get("IP").asText();
 		System.out.println("Sensor node IP Address: " + nodeIp);
@@ -238,7 +238,7 @@ public class PhysiCloudRuntime {
 		JsonObject unsubMsg = new JsonObject();
 		unsubMsg.put(JsonFieldNames.UNSUB, chanName);
 		System.out.println("Channel name: " + chanName);
-		
+
 		Optional<MessageConsumer<DataMessage>> consumer = dataConsumers.stream()
 				.filter(mc ->
 				{
@@ -256,7 +256,7 @@ public class PhysiCloudRuntime {
 					}
 				})
 				.findFirst();
-		
+
 		if(consumer.isPresent())
 		{
 			MessageConsumer<DataMessage> toRemove = consumer.get();
@@ -282,14 +282,15 @@ public class PhysiCloudRuntime {
 				if(reply.succeeded()){
 
 					JsonObject resultReply = reply.result().body();
-					String channelName = resultReply.getString(JsonFieldNames.CHANNEL_NAME);
+					String channelName = resultReply.getString(JsonFieldNames.CHANNEL_NAME);	
+
 					System.out.println("Subscribing to: " + channelName);
 
 					// Create MessageConsumer to add to ArrayList
-					MessageConsumer<DataMessage> consumer;
 
 
-					consumer = vertxHook.eventBus().consumer(channelName, new Handler<Message<DataMessage>>()	{
+
+					MessageConsumer<DataMessage> consumer = vertxHook.eventBus().consumer(channelName, new Handler<Message<DataMessage>>()	{
 
 						@Override
 						public void handle(Message<DataMessage> incomingMsg) {
@@ -303,8 +304,10 @@ public class PhysiCloudRuntime {
 						}	
 
 					});
-					// Is this add in the right place?
+
+
 					dataConsumers.add(consumer);
+
 
 				}
 
