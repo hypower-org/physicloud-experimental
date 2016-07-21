@@ -3,9 +3,11 @@ package edu.hsc.hypower.physicloud.core;
 import edu.hsc.hypower.physicloud.KernelChannels;
 
 import edu.hsc.hypower.physicloud.KernelMapNames;
+import edu.hsc.hypower.physicloud.hw.PhidgetGPSVerticle;
 import edu.hsc.hypower.physicloud.hw.PhidgetInterfaceKitVerticle;
 import edu.hsc.hypower.physicloud.hw.PhidgetNames;
 import edu.hsc.hypower.physicloud.hw.PhidgetRFIDVerticle;
+import edu.hsc.hypower.physicloud.hw.PhidgetSpatialVerticle;
 import edu.hsc.hypower.physicloud.util.JsonFieldNames;
 import edu.hsc.hypower.physicloud.util.DataArray;
 import edu.hsc.hypower.physicloud.util.DataMessage;
@@ -171,6 +173,30 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				{
 					//TODO: EXPAND THIS FUNCTIONALITY 
 					// specify for phidget gps
+
+					int deviceCount = 0;
+					String gpsStringName = PhidgetNames.PHIDGET_GPS + "." + Integer.toString(deviceCount);
+					deviceMap.put(deviceCount, gpsStringName);
+					deviceCount++;
+
+					vertx.deployVerticle(new PhidgetGPSVerticle(gpsStringName),
+							new DeploymentOptions().setWorker(true), 
+							new Handler<AsyncResult<String>>() {
+
+						@Override
+						public void handle(AsyncResult<String> res) {
+							// TODO Auto-generated method stub
+
+							if(!res.succeeded()){
+								System.err.println("Error deploying PhidgetGpsVerticle! TODO: Handle this issue.");
+							}
+							else{
+								System.out.println("PhidgetGPSVerticle deployed: " + res.result());
+							}
+
+						}
+					});
+
 				}
 
 				if(deviceName.equals(PhidgetNames.PHIDGET_RFID))
@@ -201,6 +227,28 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				if(deviceName.equals(PhidgetNames.PHIDGET_SPATIAL)){
 					//TODO: EXPAND THIS FUNCTIONALITY 
 					// specify for phidget Spatial
+
+					int deviceCount = 0;
+					String spatialStringName = PhidgetNames.PHIDGET_SPATIAL + "." + Integer.toString(deviceCount);
+					deviceMap.put(deviceCount, spatialStringName);
+					deviceCount++;
+
+					vertx.deployVerticle(new PhidgetSpatialVerticle(spatialStringName), 
+							new DeploymentOptions().setWorker(true), 
+							new Handler<AsyncResult<String>>(){
+
+						@Override
+						public void handle(AsyncResult<String> res) {
+							if(!res.succeeded()){
+								System.err.println("Error deploying PhidgetSpatialVerticle! TODO: Handle this issue.");
+							}
+							else{
+								System.out.println("PhidgetSpatialVerticle deployed: " + res.result());
+							}
+
+						}
+
+					});
 				}
 
 			}
