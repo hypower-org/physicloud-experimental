@@ -169,11 +169,10 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 
 				}
 
+				//	PHIDGET GPS SECTION
+
 				if(deviceName.equals(PhidgetNames.PHIDGET_GPS))
 				{
-					//TODO: EXPAND THIS FUNCTIONALITY 
-					// specify for phidget gps
-
 					int deviceCount = 0;
 					String gpsStringName = PhidgetNames.PHIDGET_GPS + "." + Integer.toString(deviceCount);
 					deviceMap.put(deviceCount, gpsStringName);
@@ -198,6 +197,8 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					});
 
 				}
+
+				// PHIDGET RFID SECTION
 
 				if(deviceName.equals(PhidgetNames.PHIDGET_RFID))
 				{
@@ -224,10 +225,10 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 					});
 				}
 
-				if(deviceName.equals(PhidgetNames.PHIDGET_SPATIAL)){
-					//TODO: EXPAND THIS FUNCTIONALITY 
-					// specify for phidget Spatial
+				// PHIDGET SPATIAL SECTION
 
+				if(deviceName.equals(PhidgetNames.PHIDGET_SPATIAL))
+				{
 					int deviceCount = 0;
 					String spatialStringName = PhidgetNames.PHIDGET_SPATIAL + "." + Integer.toString(deviceCount);
 					deviceMap.put(deviceCount, spatialStringName);
@@ -329,7 +330,6 @@ public class ResourceManagerVerticle extends AbstractVerticle {
 				dataTransmitTimers.put(readResReply.getString(JsonFieldNames.CHANNEL_NAME), timerId);
 			}
 
-			// TODO: At some point, we will need to handle the removal of the data transmission.
 
 		}
 		else{

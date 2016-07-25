@@ -168,7 +168,6 @@ public class PhysiCloudRuntime {
 		vertxHook.close();
 	}
 
-	// Changed the stop protocol.
 	public final void stop(String ipAddr){
 		JsonObject stopMsg = new JsonObject();
 		stopMsg.put(STOP, true);
