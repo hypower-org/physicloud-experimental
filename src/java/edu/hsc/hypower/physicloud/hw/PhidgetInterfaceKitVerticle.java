@@ -10,7 +10,6 @@ import com.phidgets.event.AttachListener;
 import edu.hsc.hypower.physicloud.KernelChannels;
 import edu.hsc.hypower.physicloud.util.DataArray;
 import edu.hsc.hypower.physicloud.util.DataTuple;
-import edu.hsc.hypower.physicloud.util.IkitConverter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
